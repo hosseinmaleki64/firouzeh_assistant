@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ثبت محصول در انبار</title>
+    <!-- فونت فارسی Vazirmatn از Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap CDN برای tooltip -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Font Awesome برای آیکون‌ها -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #00796b; /* سبز/فیروزه‌ای */
+            --secondary-color: #004d40; /* تیره‌تر */
+            --background-color: #f5f5f5; /* خاکستری روشن */
+            --text-color: #212121;
+            --border-color: #d0d0d0;
+            --error-color: #d32f2f;
+        }
+
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            direction: rtl;
+            text-align: right;
+        }
+
+        form {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--secondary-color);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .category-group {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .category-group select {
+            flex: 2;
+        }
+
+        .category-group button {
+            flex: 1;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .category-group button:hover {
+            background: var(--secondary-color);
+        }
+
+        .code-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .code-group input {
+            flex: 1;
+        }
+
+        .code-group span {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .inventory-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .prices-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .prices-group div {
+            flex: 1;
+        }
+
+        .tooltip-text {
+            color: var(--primary-color);
+            cursor: help;
+            text-decoration: underline dotted;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 1.1em;
+        }
+
+        .submit-btn:hover {
+            background: var(--secondary-color);
+        }
+
+        /* مدال برای دسته‌بندی جدید */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .modal-content input {
+            margin-bottom: 10px;
+        }
+
+        .modal-content button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .modal-content button:hover {
+            background: var(--secondary-color);
+        }
+
+        .close-modal {
+            float: left;
+            cursor: pointer;
+            font-size: 1.5em;
+        }
+
+        /* UPDATED: باکس عکس کوچکتر شد (۱۰۰×۱۰۰) و responsive بهتر */
+        .product-name-group {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+            flex-wrap: wrap; /* در صفحه‌های خیلی کوچک، عکس زیر نام می‌رود */
+        }
+
+        .product-name-group input {
+            flex: 1;
+            min-width: 250px; /* حداقل عرض برای فیلد نام تا خیلی تنگ نشود */
+        }
+
+        .image-preview {
+            position: relative; /* برای موقعیت‌دهی منو */
+            flex: 0 0 100px;
+            width: 100px;
+            height: 100px;
+            border: 1px dashed var(--border-color);
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background: #fafafa;
+            transition: box-shadow 0.3s, border-color 0.3s;
+        }
+
+        .image-preview:hover {
+            box-shadow: 0 0 8px rgba(0,121,107,0.4);
+            border-color: var(--primary-color);
+        }
+
+        .image-preview i {
+            font-size: 1.2em;
+            color: var(--primary-color);
+        }
+
+        .image-preview span {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        /* UPDATED: منوی گزینه‌های عکس – موقعیت مطلق نسبت به باکس */
+        .image-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 20;
+            width: 160px;
+            margin-top: 5px;
+        }
+
+        .image-menu button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: none;
+            border: none;
+            text-align: right;
+            cursor: pointer;
+            font-size: 0.95em;
+        }
+
+        .image-menu button:hover {
+            background: var(--background-color);
+        }
+
+        /* واحد شمارش */
+        .unit-select {
+            width: 120px;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: white;
+        }
+
+        .inventory-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .inventory-group input {
+            flex: 1;
+        }
+
+        /* Responsive عمومی */
+        @media (max-width: 600px) {
+            .category-group, .code-group, .prices-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            /* باکس عکس در موبایل کوچکتر می‌شود (۸۰×۸۰) */
+            .image-preview {
+                flex: 0 0 50px;
+                width: 80px;
+                height: 50px;
+            }
+
+            .image-preview i {
+                font-size: 1.5em;
+            }
+
+            .image-preview span {
+                font-size: 0.75em;
+            }
+
+            .product-name-group input {
+                min-width: 200px;
+            }
+
+           /* .unit-select {
+                width: 100%;
+            } */
+        }
+
+        @media (max-width: 400px) {
+            /* در صفحه‌های خیلی کوچک، عکس کاملاً زیر نام می‌رود تا فضای تایپ بیشتر باشد */
+            .product-name-group {
+                flex-direction: column;
+            }
+
+            .image-preview {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <form id="product-form">
+        <!-- نام کالا و عکس محصول -->
+        <label for="product_name">نام کالا:</label>
+        <div class="product-name-group">
+            <div class="image-preview" id="image_preview">
+                <i class="fas fa-camera"></i>
+            </div>
+            <input type="text" id="product_name" required>
+        </div>
+
+        <!-- inputهای پنهان برای عکس -->
+        <input type="file" id="file_input" accept="image/*">
+        <input type="file" id="camera_input" accept="image/*" capture="environment">
+
+        <!-- منوی گزینه‌های عکس -->
+        <div class="image-menu" id="image_menu">
+            <button id="take_photo">گرفتن عکس جدید</button>
+            <button id="select_gallery">انتخاب از گالری</button>
+        </div>
+
+        <!-- دسته‌بندی و کد محصول -->
+        <label>دسته‌بندی محصول:</label>
+        <div class="category-group">
+            <select id="category_select" required></select>
+            <button type="button" id="new_category_btn">ساخت دسته‌بندی جدید</button>
+        </div>
+
+        <label for="product_code">کد محصول:</label>
+        <div class="code-group">
+            <input type="text" id="product_code" maxlength="6" pattern="^\d{2}-\d{3}$" placeholder="XX-XXX" required title="فرمت باید XX-XXX باشد (عددهای ۰-۹)">
+            <span>(دو رقم اول نشان‌دهنده دسته‌بندی)</span>
+        </div>
+
+        <!-- موجودی -->
+        <label for="inventory_count">تعداد موجود در انبار:</label>
+        <div class="inventory-toggle">
+            <input type="checkbox" id="unlimited_checkbox" checked>
+            <label for="unlimited_checkbox">موجودی نامحدود</label>
+        </div>
+        <div class="inventory-group">
+            <input type="text" id="inventory_count" value="نامحدود" disabled>
+            <select class="unit-select" id="unit_select">
+                <option value="عدد" selected>عدد</option>
+                <option value="کیلوگرم">کیلوگرم</option>
+            </select>
+        </div>
+
+        <!-- قیمت‌ها -->
+        <label>قیمت‌ها:</label>
+        <div class="prices-group">
+            <div>
+                <label for="cost_price">قیمت تمام‌شده (ریال):</label>
+                <input type="number" id="cost_price" min="0" required>
+            </div>
+            <div>
+                <label for="sell_price">قیمت فروش (ریال):</label>
+                <input type="number" id="sell_price" min="0" required>
+            </div>
+        </div>
+        <p class="tooltip-text" data-bs-toggle="tooltip" data-bs-placement="top" title="قیمت تمام شده شامل هزینه‌های تولید، مواد اولیه و غیره است که پایه محاسبه سود است.">قیمت تمام شده به چه معناست؟</p>
+
+        <!-- توضیحات -->
+        <label for="description">توضیحات بیشتر (اختیاری):</label>
+        <textarea id="description"></textarea>
+
+        <!-- submit -->
+        <button type="submit" class="submit-btn">ذخیره در انبار</button>
+    </form>
+
+    <!-- مدال برای دسته‌بندی جدید -->
+    <div class="modal" id="category_modal">
+        <div class="modal-content">
+            <span class="close-modal" id="close_modal">×</span>
+            <label for="new_category_name">نام دسته‌بندی جدید:</label>
+            <input type="text" id="new_category_name" required>
+            <button type="button" id="save_category">ذخیره</button>
+        </div>
+    </div>
+
+    <script>
+        // دسته‌بندی‌های تستی اولیه
+        let categories = ['دسته ۱', 'دسته ۲', 'دسته ۳'];
+
+        // پر کردن سلکت دسته‌بندی
+        function populateCategories() {
+            const select = document.getElementById('category_select');
+            select.innerHTML = '';
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.text = 'انتخاب کنید';
+            select.appendChild(defaultOption);
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.text = cat;
+                select.appendChild(option);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            populateCategories();
+
+            // Tooltip Bootstrap
+            const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+            [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+
+            // مدیریت باکس عکس
+            const imagePreview = document.getElementById('image_preview');
+            const imageMenu = document.getElementById('image_menu');
+            const fileInput = document.getElementById('file_input');
+            const cameraInput = document.getElementById('camera_input');
+            const takePhotoBtn = document.getElementById('take_photo');
+            const selectGalleryBtn = document.getElementById('select_gallery');
+
+            imagePreview.addEventListener('click', (e) => {
+                e.stopPropagation();
+                imageMenu.style.display = 'block';
+            });
+
+            // بستن منو با کلیک خارج
+            document.addEventListener('click', (e) => {
+                if (!imagePreview.contains(e.target)) {
+                    imageMenu.style.display = 'none';
+                }
+            });
+
+            selectGalleryBtn.addEventListener('click', () => {
+                fileInput.click();
+            });
+
+            takePhotoBtn.addEventListener('click', () => {
+                cameraInput.click();
+            });
+
+            function handleFileSelect(input) {
+                input.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            imagePreview.innerHTML = `<img src="${event.target.result}" alt="عکس محصول">`;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                    imageMenu.style.display = 'none';
+                });
+            }
+
+            handleFileSelect(fileInput);
+            handleFileSelect(cameraInput);
+
+            // مدیریت چک‌باکس نامحدود
+            const unlimitedCheckbox = document.getElementById('unlimited_checkbox');
+            const countInput = document.getElementById('inventory_count');
+
+            unlimitedCheckbox.addEventListener('change', () => {
+                if (unlimitedCheckbox.checked) {
+                    countInput.disabled = true;
+                    countInput.value = 'نامحدود';
+                } else {
+                    countInput.disabled = false;
+                    countInput.value = '0';
+                    countInput.focus();
+                }
+            });
+
+            // مدال دسته‌بندی
+            const modal = document.getElementById('category_modal');
+            const newBtn = document.getElementById('new_category_btn');
+            const closeBtn = document.getElementById('close_modal');
+            const saveBtn = document.getElementById('save_category');
+            const newCatInput = document.getElementById('new_category_name');
+
+            newBtn.addEventListener('click', () => modal.style.display = 'flex');
+            closeBtn.addEventListener('click', () => modal.style.display = 'none');
+            window.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+
+            saveBtn.addEventListener('click', () => {
+                const newCat = newCatInput.value.trim();
+                if (newCat) {
+                    categories.push(newCat);
+                    populateCategories();
+                    modal.style.display = 'none';
+                    newCatInput.value = '';
+                }
+            });
+
+            // submit فرم
+            document.getElementById('product-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                alert('محصول ذخیره شد!');
+            });
+        });
+    </script>
+</body>
+</html>

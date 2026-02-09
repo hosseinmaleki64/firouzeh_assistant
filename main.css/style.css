@@ -1,0 +1,435 @@
+:root {
+    --primary-color: #004d40;
+    /* فیروزه‌ای تیره (dark teal) */
+    --secondary-color: #00796b;
+    /* فیروزه‌ای متوسط */
+    --background-color: #f5f5f5;
+    /* خاکستری روشن برای زمینه اصیل */
+    --text-color: #212121;
+    /* مشکی تیره برای متن */
+    --accent-color: #ffffff;
+    /* سفید برای accents */
+    --nav-bg: #004d40;
+    /* زمینه نوار پایین */
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    font-size: 16px;
+}
+
+header.app-header {
+    background-color: var(--primary-color);
+    color: var(--accent-color);
+    padding: 6px 16px;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    border-radius: 8px;
+}
+
+.logo-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.logo {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #ffffff, #cfd8dc);
+    border-radius: 14px;
+    /* مربعی نرم → مدرن‌تر از دایره */
+}
+
+.app-name {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+.header-icon {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.12);
+    border: none;
+    color: var(--accent-color);
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.header-icon:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-50%) scale(1.05);
+}
+
+.left-icon {
+    left: 16px;
+}
+
+.right-icon {
+    right: 16px;
+}
+
+
+main {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    text-align: center;
+    font-size: 1em;
+}
+
+.search-box {
+    margin: 0 0 20px 0;
+    padding: 0 5px;
+}
+
+.search-container {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+}
+
+.search-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+    font-size: 1.1rem;
+    pointer-events: none;
+}
+
+.search-input {
+    width: 80%;
+    padding: 12px 45px 12px 15px;
+    border: 1px solid #d0d0d0;
+    border-radius: 12px;
+    font-size: 1rem;
+    background-color: white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    transition: all 0.25s ease;
+    direction: rtl;
+    text-align: right;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 3px rgba(0, 121, 107, 0.15);
+}
+
+.search-input::placeholder {
+    color: #aaa;
+    opacity: 1;
+}
+
+/* اختیاری: اگر بخوای کمی حالت hover هم داشته باشه */
+.search-container:hover .search-input {
+    border-color: #bbb;
+}
+/*باکس اول -*/
+.sales-card {
+    background-color: var(--box-bg);
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+}
+
+/* ---------- Header ---------- */
+.sales-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.sales-header .title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* ---------- Select ---------- */
+#timeFrame {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    background-color: #fff;
+    color: var(--text-color);
+    outline: none;
+}
+
+#timeFrame:focus {
+    border-color: var(--secondary-color);
+}
+
+/* ---------- Stats ---------- */
+.stats-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+}
+
+.stat {
+    flex: 1;
+    text-align: center;
+}
+
+.stat .value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.stat .value.profit {
+    color: var(--secondary-color);
+}
+
+.stat .label {
+    font-size: 0.7rem;
+    margin-top: 2px;
+    color: #666;
+}
+
+/* ---------- Separator ---------- */
+.separator {
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 14px 0;
+}
+
+/* ---------- Top products ---------- */
+.section-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 8px;
+}
+
+.products-row {
+    display: flex;
+    justify-content: space-between;
+}
+
+.product {
+    flex: 1;
+    text-align: center;
+}
+
+.product .name {
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.product .count {
+    font-size: 0.7rem;
+    color: #777;
+}
+/*فوتر فایل اش رو جدا کردم*/
+
+/* Floating Action Button (ویجت +)+ Speed Dial Menu */
+
+.fab-container {
+    position: fixed;
+    bottom: 80px;          /* بالاتر از نوار پایین پروژه‌ات (فوتر) */
+    right: 20px;
+    z-index: 900;
+}
+
+.main-fab {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #00796b;           /* فیروزه‌ای متوسط - هماهنگ با تم قبلی */
+    color: white;
+    border: none;
+    font-size: 1.3rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.main-fab:hover {
+    background: #004d40;           /* تیره‌تر موقع هاور */
+    transform: scale(1.08);
+}
+
+.main-fab.open {
+    transform: rotate(45deg);
+    background: #d32f2f;           /* قرمز ملایم موقع باز بودن (اختیاری) */
+}
+
+.fab-menu {
+    position: absolute;
+    bottom: 70px;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 16px;
+    pointer-events: none;
+    opacity: 0;
+    transform: scale(0.7) translateY(20px);
+    transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.fab-menu.open {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    pointer-events: auto;
+}
+
+.fab-item {
+    width: 180px;
+    height: 48px;
+    border-radius: 24px;
+    background: #ffffff;
+    color: #212121;
+    border: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 16px;
+    padding: 0 20px 0 16px;
+    transition: all 0.25s ease;
+}
+
+.fab-item:hover {
+    background: #f0f7f5;
+    transform: translateX(-8px);
+    box-shadow: 0 6px 16px rgba(0, 121, 107, 0.22);
+}
+
+.fab-item i {
+    font-size: 1.3rem;
+    color: #00796b;
+}
+
+/* Overlay + Blur */
+.fab-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease;
+    z-index: 800;
+}
+
+.fab-menu a {
+    text-decoration: none; /* خط زیر لینک رو حذف می‌کنه */
+    display: block;        /* مطمئن می‌شه که لینک کل فضای دکمه رو بگیره */
+    color: inherit;        /* رنگ متن رو از دکمه می‌گیره، نه رنگ پیش‌فرض لینک */
+}
+
+.fab-menu a:hover,
+.fab-menu a:focus {
+    text-decoration: none; /* موقع هاور هم خط نیاد */
+}
+.fab-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Responsive – اگر فوتر پروژه‌ات خیلی پایین است */
+@media (max-width: 480px) {
+    .fab-container {
+        bottom: 90px;  /* تنظیم فاصله بیشتر از فوتر موبایل */
+        right: 16px;
+    }
+}
+
+
+/* موبایل فرست: همه چیز برای عرض 375px (مثل iPhone) بهینه شده */
+@media (min-width: 768px) {
+    body {
+        max-width: 375px;
+        margin: 0 auto;
+    }
+}
+
+/* استایل برای باکس نمودار جدید */
+.chart-container {
+    background-color: var(--box-bg);
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.chart-title {
+    font-size: 1.1em;
+    color: var(--primary-color);
+    margin: 0;
+}
+
+.time-selector {
+    position: relative;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.time-selector i {
+    font-size: 1.2em;
+    color: var(--secondary-color);
+    margin-left: 8px;
+    /* سمت چپ برای rtl */
+}
+
+.time-selector select {
+    appearance: none;
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    font-size: 0.9em;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.time-selector select:focus {
+    outline: none;
+}
+
+#salesChart {
+    max-height: 250px;
+    /* ارتفاع مناسب برای موبایل */
+}
+
+
+
+
+
+
+
+       

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سفارش‌ها</title>
+    <!-- فونت فارسی Vazirmatn از Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="main.css/foter.css">
+    <style>
+        :root {
+            --primary-color: #00796b; /* فیروزه‌ای متوسط */
+            --secondary-color: #004d40; /* فیروزه‌ای تیره */
+            --background-color: #f5f5f5; /* خاکستری روشن */
+            --text-color: #212121;
+            --accent-color: #ffffff;
+            --success-color: #4caf50; /* سبز برای موفقیت */
+            --danger-color: #f44336; /* قرمز برای خطر */
+            --border-color: #e0e0e0;
+            --shadow: 0 2px 4px rgba(0,0,0,0.1);
+            --nav-bg: #004d40;
+        }
+
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0 0 60px 0; /* فضای برای فوتر */
+            font-size: 16px;
+            overflow-x: hidden;
+        }
+
+        /* هدر فروش ماه */
+        .sales-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--accent-color);
+            padding: 15px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            border-radius: 0 0 12px 12px;
+        }
+
+        .sales-amount {
+            font-size: 1.2em;
+            font-weight: normal;
+            margin-top: 5px;
+        }
+
+        .page-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        /* بخش sticky action bar */
+        .action-bar {
+            position: sticky;
+            top: 0;
+            background: var(--accent-color);
+            padding: 15px 0;
+            display: flex;
+            justify-content: space-around;
+            box-shadow: var(--shadow);
+            z-index: 10;
+        }
+
+        .action-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .action-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: var(--accent-color);
+            border: none;
+            font-size: 1.3em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s;
+            margin-bottom: 5px;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.1);
+            background: var(--secondary-color);
+        }
+
+        .action-label {
+            font-size: 0.7em;
+            color: #666;
+        }
+        .action-bar a {
+    text-decoration: none;     /* خط زیر لینک رو کامل حذف می‌کنه */
+    color: inherit;            /* رنگ متن رو از داخل action-item می‌گیره (نه رنگ آبی لینک) */
+    display: block;            /* مطمئن می‌شه لینک کل فضای آیتم رو بگیره */
+    width: 100%;               /* برای اینکه کل عرض آیتم قابل کلیک باشه */
+    height: 100%;
+}
+.action-bar a:hover,
+.action-bar a:focus,
+.action-bar a:active {
+    text-decoration: none;     /* موقع هاور، فوکوس یا کلیک هم خط نیاد */
+    color: inherit;
+}
+
+        /* تیتر سفارشات باز */
+        .open-orders-title {
+            padding: 0 20px;
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        /* فیلتر */
+        .filter-container {
+            padding: 0 20px;
+            margin-bottom: 20px;
+        }
+
+        .filter-select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--accent-color);
+        }
+
+        /* لیست سفارشات */
+        .orders-list {
+            padding: 0 20px;
+        }
+
+        .order-card {
+            background: var(--accent-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: max-height 0.5s ease, padding 0.3s;
+            overflow: hidden;
+            max-height: 150px; /* حالت کوچک */
+        }
+
+        .order-card.expanded {
+            max-height: 500px; /* حالت بزرگ */
+            padding: 20px;
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .customer-name {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .order-dates {
+            font-size: 0.9em;
+            color: #666;
+            margin: 5px 0;
+        }
+
+        .deliver-btn {
+            background: var(--success-color);
+            color: var(--accent-color);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .deliver-btn.delivered {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .order-details {
+            display: none;
+            margin-top: 15px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+        }
+
+        .order-card.expanded .order-details {
+            display: block;
+        }
+
+        .customer-info {
+            margin-bottom: 10px;
+        }
+
+        .phone-number {
+            cursor: pointer;
+            color: var(--primary-color);
+        }
+
+        .products-list {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0;
+        }
+
+        .products-list li {
+            margin-bottom: 5px;
+        }
+
+        .notes {
+            font-style: italic;
+            color: #777;
+            margin-bottom: 15px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .edit-btn {
+            background: var(--primary-color);
+            color: var(--accent-color);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .cancel-btn {
+            background: var(--danger-color);
+            color: var(--accent-color);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            flex: 1;
+        }
+/* فوتر رو گذاشتم تو فایل css اش */
+
+        /* موبایل فرست */
+        @media (min-width: 768px) {
+            body {
+                max-width: 600px;
+                margin: 0 auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ۱: هدر فروش ماه -->
+    <div class="sales-header">
+        <div class="page-title">سفارش‌ها</div>
+        <div class="sales-amount">کل فروش ماهانه: ۱۲,۸۵۰,۰۰۰ تومان</div>
+    </div>
+
+    <!-- ۲: action bar sticky -->
+    <div class="action-bar">
+        <a href="create_order.html">
+        <div class="action-item">
+            <button class="action-btn" onclick="registerNew('order')"><i class="fas fa-shopping-cart"></i></button>
+            <span class="action-label">ثبت سفارش</span>
+        </div>
+        </a>
+        <a href="add_product.html">
+        <div class="action-item">
+            <button class="action-btn" onclick="registerNew('product')"><i class="fas fa-box"></i></button>
+            <span class="action-label">ثبت محصول</span>
+        </div>
+        </a>
+        <a href="">
+        <div class="action-item">
+            <button class="action-btn" onclick="registerNew('expense')"><i class="fas fa-money-bill-wave"></i></button>
+            <span class="action-label">ثبت هزینه</span>
+        </div>
+        </a>
+    </div>
+
+    <!-- تیتر سفارشات باز -->
+    <div class="open-orders-title">سفارشات باز</div>
+
+    <!-- ۳: فیلتر و لیست -->
+    <div class="filter-container">
+        <select class="filter-select" id="order-filter">
+            <option value="all">همه</option>
+            <option value="daily">روزانه</option>
+            <option value="weekly">هفتگی</option>
+            <option value="monthly">ماهانه</option>
+            <option value="delivered">تحویل داده شده</option>
+            <option value="pending">در انتظار</option>
+        </select>
+    </div>
+
+    <div class="orders-list" id="orders-list"></div>
+
+    <!-- ۶: فوتر -->
+    <footer class="bottom-nav">
+    <a href="">
+    <div class="nav-item" data-page="costs" onclick="navigate('costs', this)">
+        <i class="fas fa-money-bill-wave"></i>
+        <span>هزینه‌ها</span>
+        <div class="indicator"></div>
+    </div>
+</a>
+<a href="pending_orders.html">
+    <div class="nav-item active" data-page="orders" onclick="navigate('orders', this)">
+        <i class="fas fa-box-open"></i>
+        <span>سفارش‌ها</span>
+        <div class="indicator"></div>
+    </div>
+</a>
+    <!-- این یکی همیشه nav-home داره (برجسته و دایره سفید) -->
+     <a href="index.html">
+    <div class="nav-item nav-home" data-page="home" onclick="navigate('home', this)">
+        <div class="home-circle">
+            <i class="fas fa-home"></i>
+        </div>
+        <span>خانه</span>
+        <div class="indicator"></div>
+    </div>
+</a>
+<a href="inventory.html">
+    <div class="nav-item" data-page="inventory" onclick="navigate('inventory', this)">
+        <i class="fas fa-warehouse"></i>
+        <span>انبار</span>
+        <div class="indicator"></div>
+    </div>
+</a>
+<a href="reports.html">
+    <div class="nav-item" data-page="reports" onclick="navigate('reports', this)">
+        <i class="fas fa-chart-bar"></i>
+        <span>گزارشات</span>
+        <div class="indicator"></div>
+    </div>
+</a>  
+</footer>
+
+    <script>
+        // داده‌های تستی سفارشات
+        const orders = [
+            { id: 1, customer: 'علی احمدی', phone: '09123456789', address: 'تهران، خیابان انقلاب', registerDate: '۱۴۰۴/۰۷/۱۵ - ۱۴:۳۰', deliveryDate: '۱۴۰۴/۰۷/۱۸ - ۱۹:۰۰', products: [{name: 'پیراشکی', qty: 20}, {name: 'مینی پیتزا', qty: 3}], notes: 'تحویل درب منزل', status: 'pending' },
+            { id: 2, customer: 'فاطمه محمدی', phone: '09198765432', address: 'اصفهان، چهارباغ', registerDate: '۱۴۰۴/۰۷/۱۴ - ۱۰:۰۰', deliveryDate: '۱۴۰۴/۰۷/۱۷ - ۱۵:۰۰', products: [{name: 'کیک', qty: 1}], notes: '', status: 'delivered' },
+            { id: 3, customer: 'محمد رضایی', phone: '09111122333', address: 'شیراز، بازار وکیل', registerDate: '۱۴۰۴/۰۷/۱۳ - ۱۶:۴۵', deliveryDate: '۱۴۰۴/۰۷/۱۶ - ۲۰:۰۰', products: [{name: 'دونات', qty: 10}], notes: 'با بسته‌بندی هدیه', status: 'pending' },
+            { id: 4, customer: 'سارا علوی', phone: '09144455666', address: 'مشهد، خیابان امام رضا', registerDate: '۱۴۰۴/۰۷/۱۲ - ۰۹:۳۰', deliveryDate: '۱۴۰۴/۰۷/۱۵ - ۱۸:۰۰', products: [{name: 'پیراشکی', qty: 5}, {name: 'کیک', qty: 2}], notes: '', status: 'delivered' },
+            { id: 5, customer: 'حسین کریمی', phone: '09177788999', address: 'تبریز، میدان ساعت', registerDate: '۱۴۰۴/۰۷/۱۱ - ۱۳:۱۵', deliveryDate: '۱۴۰۴/۰۷/۱۴ - ۱۷:۰۰', products: [{name: 'مینی پیتزا', qty: 15}], notes: 'فوری', status: 'pending' },
+            { id: 6, customer: 'زهرا حسینی', phone: '09122233444', address: 'کرج، میدان سپاه', registerDate: '۱۴۰۴/۰۷/۱۰ - ۱۱:۰۰', deliveryDate: '۱۴۰۴/۰۷/۱۳ - ۱۶:۰۰', products: [{name: 'دونات', qty: 8}], notes: '', status: 'delivered' },
+            { id: 7, customer: 'رضا نوری', phone: '09155566777', address: 'اهواز، خیابان کیانپارس', registerDate: '۱۴۰۴/۰۷/۰۹ - ۱۵:۳۰', deliveryDate: '۱۴۰۴/۰۷/۱۲ - ۱۹:۳۰', products: [{name: 'پیراشکی', qty: 30}], notes: 'با کارت تبریک', status: 'pending' },
+            { id: 8, customer: 'مینا صالحی', phone: '09188899000', address: 'رشت، میدان شهرداری', registerDate: '۱۴۰۴/۰۷/۰۸ - ۱۲:۴۵', deliveryDate: '۱۴۰۴/۰۷/۱۱ - ۱۴:۰۰', products: [{name: 'کیک', qty: 4}], notes: '', status: 'pending' }
+        ];
+
+        // تابع برای رندر کارت‌ها
+        function renderOrders(filteredOrders) {
+            const list = document.getElementById('orders-list');
+            list.innerHTML = '';
+            filteredOrders.forEach(order => {
+                const card = document.createElement('div');
+                card.classList.add('order-card');
+                card.innerHTML = `
+                    <div class="order-header">
+                        <div class="customer-name">${order.customer}</div>
+                        <button class="deliver-btn ${order.status === 'delivered' ? 'delivered' : ''}" ${order.status === 'delivered' ? 'disabled' : ''} onclick="deliverOrder(${order.id})">
+                            ${order.status === 'delivered' ? 'تحویل شده' : 'تحویل داده شد'}
+                        </button>
+                    </div>
+                    <div class="order-dates">
+                        ثبت: ${order.registerDate}<br>تحویل: ${order.deliveryDate}
+                    </div>
+                    <div class="order-details">
+                        <div class="customer-info">
+                            شماره: <span class="phone-number" onclick="copyPhone('${order.phone}')" ondblclick="callPhone('${order.phone}')">${order.phone}</span><br>آدرس: ${order.address}
+                        </div>
+                        <ul class="products-list">
+                            ${order.products.map(p => `<li>${p.qty} × ${p.name}</li>`).join('')}
+                        </ul>
+                        ${order.notes ? `<div class="notes">توضیحات: ${order.notes}</div>` : ''}
+                        <div class="action-buttons">
+                            <button class="edit-btn" onclick="editOrder(${order.id})">تغییرات</button>
+                            <button class="cancel-btn" onclick="cancelOrder(${order.id})">لغو سفارش</button>
+                        </div>
+                    </div>
+                `;
+                card.addEventListener('click', (e) => {
+                    if (!e.target.closest('button') && !e.target.classList.contains('phone-number')) {
+                        card.classList.toggle('expanded');
+                    }
+                });
+                list.appendChild(card);
+            });
+        }
+
+        // فیلتر سفارشات
+        document.getElementById('order-filter').addEventListener('change', (e) => {
+            const value = e.target.value;
+            let filtered = orders;
+            if (value === 'pending') filtered = orders.filter(o => o.status === 'pending');
+            if (value === 'delivered') filtered = orders.filter(o => o.status === 'delivered');
+            // برای روزانه/هفتگی/ماهانه می‌تونی منطق زمانی اضافه کنی، فعلاً همه رو نشون می‌ده
+            renderOrders(filtered);
+        });
+
+        // توابع اکشن
+        function deliverOrder(id) {
+            const order = orders.find(o => o.id === id);
+            if (order) {
+                order.status = 'delivered';
+                renderOrders(orders); // رفرش لیست
+            }
+        }
+
+        function editOrder(id) {
+            alert(`ویرایش سفارش ${id}`);
+        }
+
+        function cancelOrder(id) {
+            alert(`لغو سفارش ${id}`);
+        }
+
+        function registerNew(type) {
+            alert(`ثبت جدید: ${type}`);
+        }
+
+        function navigate(page) {
+            alert(`رفتن به: ${page}`);
+        }
+
+        function copyPhone(phone) {
+            navigator.clipboard.writeText(phone).then(() => {
+                alert('شماره کپی شد: ' + phone);
+            }).catch(err => {
+                console.error('خطا در کپی: ', err);
+            });
+        }
+
+        function callPhone(phone) {
+            window.location.href = 'tel:' + phone;
+        }
+
+        // اولیه رندر
+        renderOrders(orders.filter(o => o.status === 'pending')); // اولیه pending
+    </script>
+</body>
+</html>

@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>انبار محصولات</title>
+    <!-- فونت Vazirmatn -->
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="main.css/foter.css">
+    <style>
+        :root {
+            --primary: #00796b;
+            --primary-color: #00796b;
+            --primary-dark: #004d40;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text: #212529;
+            --accent-color: #ffffff;
+            --text-light: #6c757d;
+            --border: #dee2e6;
+            --low-stock: #fd7e14;
+            --zero-stock: #6c757d;
+            --success: #28a745;
+            --danger: #dc3545;
+            --shadow: 0 3px 10px rgba(0,0,0,0.08);
+            --nav-bg: #004d40;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Vazirmatn', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: var(--accent-color);
+            padding: 15px 20px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border-radius: 0 0 12px 12px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.55rem;
+            font-weight: 700;
+        }
+
+        .total-products {
+            margin: 20px 20px 0;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        .total-products strong {
+            font-size: 2.4rem;
+            color: var(--primary);
+            display: block;
+        }
+
+        .total-products span {
+            font-size: 1.1rem;
+            color: var(--text-light);
+        }
+
+        .search-box {
+            margin: 16px 20px;
+        }
+
+        #search {
+            width: 100%;
+            padding: 12px 16px 12px 44px;
+            border: 1px solid #ced4da;
+            border-radius: 10px;
+            font-size: 1rem;
+            background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236c757d' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'/%3E%3C/svg%3E") no-repeat 16px center;
+            background-size: 18px;
+        }
+
+        .filters {
+            padding: 0 20px 16px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .category-select {
+            flex: 1 1 180px;
+            min-width: 0;
+            padding: 10px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+        .toggle-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: white;
+            cursor: pointer;
+            user-select: none;
+            font-size: 0.92rem;
+            transition: all 0.2s;
+        }
+
+        .toggle.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .toggle-count {
+            background: rgba(0,0,0,0.12);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.82rem;
+            min-width: 22px;
+            text-align: center;
+        }
+
+        .toggle.active .toggle-count {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+            gap: 16px;
+            padding: 0 20px 100px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: all 0.25s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .product-card.low-stock {
+            border-left: 4px solid var(--low-stock);
+        }
+
+        .product-card.zero-stock {
+            opacity: 0.72;
+            filter: grayscale(0.4);
+        }
+
+        .product-card.expanded {
+            grid-column: 1 / -1;
+            z-index: 5;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+        }
+
+        .card-header {
+            height: 110px;
+            background: #f1f3f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .card-img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 10px;
+            background: #e9ecef;
+        }
+
+        .card-img-placeholder {
+            font-size: 2.8rem;
+            color: #adb5bd;
+        }
+
+        .card-body {
+            padding: 14px;
+        }
+
+        .product-name {
+            font-weight: 600;
+            font-size: 1.05rem;
+            margin: 0 0 6px;
+            line-height: 1.35;
+        }
+
+        .product-code {
+            font-size: 0.82rem;
+            color: #6c757d;
+            margin-bottom: 4px;
+            cursor: pointer;
+            display: inline-block;
+            transition: color 0.2s;
+        }
+
+        .product-code:hover {
+            color: var(--primary);
+        }
+
+        .category-tag {
+            display: inline-block;
+            font-size: 0.78rem;
+            padding: 3px 10px;
+            border-radius: 12px;
+            background: #e9ecef;
+            margin-bottom: 8px;
+        }
+
+        .stock-info {
+            font-size: 0.95rem;
+            margin: 6px 0;
+        }
+
+        .stock-low {
+            color: var(--low-stock);
+            font-weight: 600;
+        }
+
+        .stock-zero {
+            color: var(--zero-stock);
+            font-weight: 500;
+        }
+
+        .prices {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.92rem;
+            margin-top: 8px;
+        }
+
+        .sell-price {
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        .cost-price {
+            color: #6c757d;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            opacity: 0.85;
+        }
+
+        .btn-small {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-edit {
+            background: #e9ecef;
+            color: #343a40;
+        }
+
+        .btn-edit:hover {
+            background: #dee2e6;
+        }
+
+        .btn-delete {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .btn-delete:hover {
+            background: #f5c2c7;
+        }
+
+        .card-details {
+            display: none;
+            padding: 0 14px 14px;
+            border-top: 1px solid var(--border);
+            margin-top: 10px;
+            font-size: 0.93rem;
+            color: #495057;
+        }
+
+        .card.expanded .card-details {
+            display: block;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 30px;
+            color: #6c757d;
+        }
+
+        .empty-state h2 {
+            margin: 0 0 16px;
+            font-size: 1.4rem;
+            color: #495057;
+        }
+
+        .btn-add-first {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+
+        .fab {
+            position: fixed;
+            bottom: 90px;
+            right: 24px;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 20px rgba(0,121,107,0.35);
+            cursor: pointer;
+            z-index: 100;
+            transition: transform 0.2s;
+        }
+
+        .fab:hover {
+            transform: scale(1.08);
+        }
+
+        /*من فایل سی اس اش فوتر رو جدا کردم */ 
+
+        @media (min-width: 768px) {
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+                gap: 20px;
+            }
+
+            header h1 {
+                font-size: 1.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>انبار محصولات</h1>
+</header>
+
+<div class="total-products">
+    <strong id="totalCount">۰</strong>
+    <span>محصول در انبار</span>
+</div>
+
+<div class="search-box">
+    <input type="text" id="search" placeholder="جستجو نام محصول، کد یا دسته‌بندی ...">
+</div>
+
+<div class="filters">
+    <select class="category-select" id="categoryFilter">
+        <option value="">همه دسته‌بندی‌ها</option>
+    </select>
+
+    <div class="toggle-group">
+        <div class="toggle" id="inStockToggle">
+            <i class="fas fa-check-circle"></i> موجود
+            <span class="toggle-count" id="inStockCount">۰</span>
+        </div>
+        <div class="toggle" id="outOfStockToggle">
+            <i class="fas fa-times-circle"></i> ناموجود
+            <span class="toggle-count" id="outOfStockCount">۰</span>
+        </div>
+    </div>
+</div>
+
+<div class="products-grid" id="productsGrid"></div>
+
+<div class="empty-state" id="emptyState" style="display:none;">
+    <h2>هنوز محصولی ثبت نشده است</h2>
+    <a href="add_product.html">
+    <button class="btn-add-first">افزودن اولین محصول</button>
+    </a>
+</div>
+<a href="add_product.html">
+<div class="fab" id="addProductFab" title="افزودن محصول جدید">
+    <i class="fas fa-plus"></i>
+</div>
+</a>
+ <!-- ۶: فوتر -->
+    <footer class="bottom-nav">
+    <a href="">
+    <div class="nav-item" data-page="costs" onclick="navigate('costs', this)">
+        <i class="fas fa-money-bill-wave"></i>
+        <span>هزینه‌ها</span>
+        <div class="indicator"></div>
+    </div>
+</a>
+<a href="pending_orders.html">
+    <div class="nav-item " data-page="orders" onclick="navigate('orders', this)">
+        <i class="fas fa-box-open"></i>
+        <span>سفارش‌ها</span>
+        <div class="indicator"></div>
+    </div>
+</a>
+    <!-- این یکی همیشه nav-home داره (برجسته و دایره سفید) -->
+     <a href="index.html">
+    <div class="nav-item nav-home" data-page="home" onclick="navigate('home', this)">
+        <div class="home-circle">
+            <i class="fas fa-home"></i>
+        </div>
+        <span>خانه</span>
+        <div class="indicator"></div>
+    </div>
+</a>
+<a href="inventory.html">
+    <div class="nav-item active" data-page="inventory" onclick="navigate('inventory', this)">
+        <i class="fas fa-warehouse"></i>
+        <span>انبار</span>
+        <div class="indicator"></div>
+    </div>
+</a>
+<a href="reports.html">
+    <div class="nav-item" data-page="reports" onclick="navigate('reports', this)">
+        <i class="fas fa-chart-bar"></i>
+        <span>گزارشات</span>
+        <div class="indicator"></div>
+    </div>
+</a>  
+</footer>
+
+<script>
+// داده‌های نمونه (۱۵ محصول)
+const productsData = [
+    {id:1, name:"پیراشکی گوشت", code:"01-025", category:"فست‌فود", stock:42, cost:18000, sell:45000, description:"پیراشکی گوشت تازه با خمیر دست‌ساز", image:"https://via.placeholder.com/80x80/ffc107/000?text=پیراشکی"},
+    {id:2, name:"کیک شکلاتی", code:"02-014", category:"شیرینی", stock:8, cost:95000, sell:220000, description:"کیک شکلاتی سه طبقه با گاناش", image:"https://via.placeholder.com/80x80/dc3545/fff?text=کیک"},
+    {id:3, name:"دونات ساده", code:"03-008", category:"شیرینی", stock:0, cost:12000, sell:35000, description:"دونات ساده با شکر", image:""},
+    {id:4, name:"مینی پیتزا مارگاریتا", code:"01-031", category:"فست‌فود", stock:18, cost:32000, sell:75000, description:"مینی پیتزا با پنیر و گوجه", image:"https://via.placeholder.com/80x80/28a745/fff?text=پیتزا"},
+    {id:5, name:"نان خامه‌ای", code:"02-019", category:"شیرینی", stock:3, cost:28000, sell:65000, description:"نان خامه‌ای تازه", image:""},
+    {id:6, name:"کلوچه خرمایی", code:"04-005", category:"خشکبار", stock:65, cost:14000, sell:38000, description:"کلوچه سنتی خرمایی", image:"https://via.placeholder.com/80x80/6f42c1/fff?text=کلوچه"},
+    {id:7, name:"کاپ کیک وانیلی", code:"02-022", category:"شیرینی", stock:0, cost:22000, sell:55000, description:"کاپ کیک وانیلی با کرم", image:""},
+    {id:8, name:"سمبوسه سیب‌زمینی", code:"01-017", category:"فست‌فود", stock:29, cost:15000, sell:40000, description:"سمبوسه سیب‌زمینی و سبزیجات", image:"https://via.placeholder.com/80x80/007bff/fff?text=سمبوسه"},
+    {id:9, name:"ژله میوه‌ای", code:"05-003", category:"دسر", stock:12, cost:18000, sell:48000, description:"ژله چند لایه با میوه", image:""},
+    {id:10, name:"پفک نمکی", code:"06-011", category:"اسنک", stock:150, cost:8000, sell:22000, description:"پفک نمکی بزرگ", image:"https://via.placeholder.com/80x80/ffc107/000?text=پفک"},
+    {id:11, name:"تارت لیمویی", code:"02-027", category:"شیرینی", stock:4, cost:85000, sell:195000, description:"تارت لیمویی ترش و شیرین", image:""},
+    {id:12, name:"فلافل", code:"01-009", category:"فست‌فود", stock:0, cost:16000, sell:42000, description:"فلافل خانگی", image:""},
+    {id:13, name:"بستنی سنتی", code:"05-007", category:"دسر", stock:22, cost:35000, sell:85000, description:"بستنی زعفرانی سنتی", image:""},
+    {id:14, name:"چیپس میوه", code:"06-004", category:"اسنک", stock:78, cost:22000, sell:58000, description:"چیپس میوه مخلوط", image:""},
+    {id:15, name:"شیرینی زبان", code:"02-033", category:"شیرینی", stock:19, cost:25000, sell:62000, description:"شیرینی زبان خامه‌ای", image:""}
+];
+
+// متغیرهای حالت
+let searchTerm = "";
+let selectedCategory = "";
+let showInStock = true;
+let showOutOfStock = true;
+
+// عناصر DOM
+const grid = document.getElementById("productsGrid");
+const totalCountEl = document.getElementById("totalCount");
+const inStockCountEl = document.getElementById("inStockCount");
+const outOfStockCountEl = document.getElementById("outOfStockCount");
+const emptyState = document.getElementById("emptyState");
+const addFab = document.getElementById("addProductFab");
+
+// پر کردن دسته‌بندی‌ها
+function populateCategories() {
+    const select = document.getElementById("categoryFilter");
+    const categories = [...new Set(productsData.map(p => p.category))].sort();
+    categories.forEach(cat => {
+        const opt = document.createElement("option");
+        opt.value = cat;
+        opt.textContent = cat;
+        select.appendChild(opt);
+    });
+}
+
+// محاسبه شمارنده‌ها
+function updateCounters(filtered) {
+    const inStock = filtered.filter(p => p.stock > 0).length;
+    const outOfStock = filtered.filter(p => p.stock === 0).length;
+
+    totalCountEl.textContent = filtered.length;
+    inStockCountEl.textContent = inStock;
+    outOfStockCountEl.textContent = outOfStock;
+
+    emptyState.style.display = filtered.length === 0 ? "block" : "none";
+    addFab.style.display = filtered.length > 0 ? "flex" : "none";
+}
+
+// رندر کارت‌ها
+function renderProducts() {
+    grid.innerHTML = "";
+
+    let filtered = productsData;
+
+    // جستجو
+    if (searchTerm) {
+        const term = searchTerm.toLowerCase();
+        filtered = filtered.filter(p =>
+            p.name.toLowerCase().includes(term) ||
+            p.code.toLowerCase().includes(term) ||
+            p.category.toLowerCase().includes(term)
+        );
+    }
+
+    // دسته‌بندی
+    if (selectedCategory) {
+        filtered = filtered.filter(p => p.category === selectedCategory);
+    }
+
+    // موجود / ناموجود
+    if (!showInStock && !showOutOfStock) {
+        filtered = [];
+    } else if (!showInStock) {
+        filtered = filtered.filter(p => p.stock === 0);
+    } else if (!showOutOfStock) {
+        filtered = filtered.filter(p => p.stock > 0);
+    }
+
+    updateCounters(filtered);
+
+    if (filtered.length === 0) return;
+
+    filtered.forEach(product => {
+        const card = document.createElement("div");
+        card.className = "product-card";
+        if (product.stock === 0) card.classList.add("zero-stock");
+        else if (product.stock < 5) card.classList.add("low-stock");
+
+        card.innerHTML = `
+            <div class="card-header">
+                ${product.image ?
+                    `<img src="${product.image}" class="card-img" alt="${product.name}">` :
+                    `<i class="fas fa-box card-img-placeholder"></i>`
+                }
+            </div>
+            <div class="card-body">
+                <h3 class="product-name">${product.name}</h3>
+                <div class="product-code" title="کلیک برای کپی" data-code="${product.code}">
+                    کد: ${product.code}
+                </div>
+                <div class="category-tag">${product.category}</div>
+
+                <div class="stock-info ${product.stock < 5 ? 'stock-low' : product.stock === 0 ? 'stock-zero' : ''}">
+                    موجودی: ${product.stock === 0 ? 'ناموجود' : product.stock + ' عدد'}
+                </div>
+
+                <div class="prices">
+                    <span class="cost-price">${product.cost.toLocaleString('fa-IR')} تومان</span>
+                    <span class="sell-price">${product.sell.toLocaleString('fa-IR')} تومان</span>
+                </div>
+
+                <div class="card-actions">
+                    <button class="btn-small btn-edit"><i class="fas fa-edit"></i> ویرایش</button>
+                    <button class="btn-small btn-delete"><i class="fas fa-trash"></i> حذف</button>
+                </div>
+
+                ${product.description ? `
+                <div class="card-details">
+                    ${product.description}
+                </div>` : ""}
+            </div>
+        `;
+
+        // گسترش کارت
+        card.addEventListener("click", (e) => {
+            if (!e.target.closest(".btn-small") && !e.target.closest(".product-code")) {
+                card.classList.toggle("expanded");
+            }
+        });
+
+        // کپی کد
+        card.querySelector(".product-code").addEventListener("click", function(e) {
+            e.stopPropagation();
+            const code = this.dataset.code;
+            navigator.clipboard.writeText(code).then(() => {
+                const oldText = this.textContent;
+                this.textContent = "کپی شد!";
+                setTimeout(() => this.textContent = oldText, 1800);
+            });
+        });
+
+        grid.appendChild(card);
+    });
+}
+
+// Event Listeners
+document.getElementById("search").addEventListener("input", e => {
+    searchTerm = e.target.value;
+    renderProducts();
+});
+
+document.getElementById("categoryFilter").addEventListener("change", e => {
+    selectedCategory = e.target.value;
+    renderProducts();
+});
+
+document.getElementById("inStockToggle").addEventListener("click", function() {
+    this.classList.toggle("active");
+    showInStock = this.classList.contains("active");
+    renderProducts();
+});
+
+document.getElementById("outOfStockToggle").addEventListener("click", function() {
+    this.classList.toggle("active");
+    showOutOfStock = this.classList.contains("active");
+    renderProducts();
+});
+
+addFab.addEventListener("click", () => {
+    alert("صفحه افزودن محصول جدید");
+});
+
+document.querySelector(".btn-add-first")?.addEventListener("click", () => {
+    alert("صفحه افزودن اولین محصول");
+});
+
+function navigate(page) {
+    alert("انتقال به صفحه: " + page);
+}
+
+// شروع
+populateCategories();
+renderProducts();
+</script>
+</body>
+</html>

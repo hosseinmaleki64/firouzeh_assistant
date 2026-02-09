@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>گزارشات مالی</title>
+    <!-- فونت فارسی Vazirmatn از Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="main.css/foter.css">
+    <!-- SheetJS for Excel export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- jsPDF for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #00796b; /* فیروزه‌ای متوسط */
+            --secondary-color: #004d40; /* فیروزه‌ای تیره */
+            --background-color: #f5f5f5; /* خاکستری روشن */
+            --text-color: #212121;
+            --accent-color: #ffffff;
+            --success-color: #4caf50; /* سبز برای موفقیت */
+            --danger-color: #f44336; /* قرمز برای خطر */
+            --border-color: #e0e0e0;
+            --shadow: 0 2px 4px rgba(0,0,0,0.1);
+            --gradient-bg: linear-gradient(135deg, #f0f7f5, #e0f2f1);
+            --nav-bg: #004d40;
+        }
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0 0 60px 0; /* فضای برای فوتر */
+            font-size: 16px;
+            overflow-x: hidden;
+        }
+        /* هدر */
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--accent-color);
+            padding: 10px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            border-radius: 0 0 12px 12px;
+        }
+        .page-title {
+            font-size: 1.6em;
+            font-weight: bold;
+            margin: 0;
+        }
+        .page-subtitle {
+            font-size: 1.1em;
+            color: rgba(255,255,255,0.8);
+            margin-top: 5px;
+        }
+        /* باکس‌های آماری */
+        .stats-container {
+            background: var(--gradient-bg);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin: 0 20px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: space-between;
+        }
+        .stat-card {
+            background: var(--accent-color);
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            flex: 0 1 calc(48% - 15px);
+            min-width: 140px;
+        }
+        .stat-icon {
+            font-size: 1.6em;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+        }
+        .stat-title {
+            font-size: 0.85em;
+            color: #666;
+        }
+        .stat-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: var(--success-color);
+        }
+        /* جستجو */
+        .search-container {
+            padding: 0 20px;
+            margin-bottom: 20px;
+        }
+        .search-input {
+            width: 93%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1em;
+            box-shadow: var(--shadow);
+        }
+        /* فیلترها */
+        .filters-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 0 20px;
+            margin-bottom: 20px;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .filter-select {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--accent-color);
+        }
+        .toggle-group {
+            display: flex;
+            gap: 10px;
+        }
+        .toggle-btn {
+            background: var(--accent-color);
+            border: 1px solid var(--border-color);
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: background 0.3s;
+        }
+        .toggle-btn.active {
+            background: var(--primary-color);
+            color: var(--accent-color);
+        }
+        /* دکمه‌های اکسپورت */
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .export-btn {
+            background: var(--primary-color);
+            color: var(--accent-color);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.3s;
+        }
+        .export-btn:hover {
+            background: var(--secondary-color);
+        }
+        /* لیست گزارشات */
+        .reports-list {
+            padding: 0 20px;
+        }
+        .report-card {
+            background: var(--accent-color);
+            border-radius: 16px;
+            padding: 12px;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: box-shadow 0.3s ease, max-height 0.5s ease, padding 0.3s;
+            overflow: hidden;
+            max-height: 150px; /* حالت کوچک - کمتر و فشرده‌تر */
+        }
+        .report-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .report-card.expanded {
+            max-height: 500px; /* حالت بزرگ */
+            padding: 15px;
+        }
+        .report-card.canceled {
+            border: 2px solid var(--danger-color);
+            position: relative;
+        }
+        .report-card.canceled::before {
+            content: 'لغو شده';
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: var(--danger-color);
+            color: var(--accent-color);
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .order-code {
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+        .customer-name {
+            font-size: 1em;
+            font-weight: 500;
+            margin: 3px 0;
+        }
+        .source {
+            font-size: 0.85em;
+            color: var(--primary-color);
+            margin: 3px 0;
+        }
+        .dates {
+            font-size: 0.85em;
+            color: #666;
+            margin: 3px 0;
+        }
+        .amount {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: var(--success-color);
+            text-align: left;
+            margin: 3px 0;
+        }
+        .report-details {
+            display: none;
+            margin-top: 10px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 10px;
+        }
+        .report-card.expanded .report-details {
+            display: block;
+        }
+        .products-list {
+            list-style: none;
+            padding: 0;
+            margin: 8px 0;
+        }
+        .products-list li {
+            margin-bottom: 3px;
+            font-size: 0.9em;
+        }
+        .notes {
+            font-style: italic;
+            color: #777;
+            margin-top: 8px;
+            font-size: 0.9em;
+        }
+        /* Responsive */
+        @media (max-width: 600px) {
+            .stats-container {
+                flex-direction: column;
+            }
+            .filters-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .toggle-group {
+                justify-content: center;
+                margin: 10px 0;
+            }
+        }
+        @media (min-width: 768px) {
+            body {
+                max-width: 600px;
+                margin: 0 auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ۱: هدر -->
+    <header>
+        <h1 class="page-title">گزارشات مالی</h1>
+        <p class="page-subtitle">سفارش‌های تحویل شده</p>
+    </header>
+    <!-- ۲: باکس‌های آماری -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <i class="fas fa-chart-line stat-icon"></i>
+            <div class="stat-title">میانگین مبلغ فروش</div>
+            <div class="stat-value" id="avg-value">۰ تومان</div>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-wallet stat-icon"></i>
+            <div class="stat-title">مجموع کل فروش</div>
+            <div class="stat-value" id="total-revenue">۰ تومان</div>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-star stat-icon"></i>
+            <div class="stat-title">پرفروش‌ترین محصول</div>
+            <div class="stat-value" id="top-product">نامعلوم</div>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-boxes stat-icon"></i>
+            <div class="stat-title">تعداد سفارش‌ها</div>
+            <div class="stat-value" id="orders-count">۰</div>
+        </div>
+    </div>
+    <!-- ۳: جستجو -->
+    <div class="search-container">
+        <input type="text" class="search-input" id="search-input" placeholder="جستجو با کد سفارش ...">
+    </div>
+    <!-- ۴: فیلترها -->
+    <div class="filters-container">
+        <select class="filter-select" id="time-filter">
+            <option value="monthly" selected>ماهانه</option>
+            <option value="weekly">هفتگی</option>
+            <option value="yearly">سالانه</option>
+        </select>
+        <div class="toggle-group">
+            <div class="toggle-btn" id="canceled-toggle"><i class="fas fa-ban"></i> لغو شده‌ها</div>
+            <div class="toggle-btn" id="corporate-toggle"><i class="fas fa-building"></i> شرکتی</div>
+        </div>
+        <select class="filter-select" id="source-filter">
+            <option value="all" selected>همه</option>
+            <option value="اینستاگرام">اینستاگرام</option>
+            <option value="سایت">سایت</option>
+            <option value="تلفنی">تلفنی</option>
+            <option value="حضوری">حضوری</option>
+            <option value="سایر">سایر</option>
+        </select>
+        <select class="filter-select" id="export-select">
+            <option value="" selected>اکسپورت...</option>
+            <option value="excel">اکسپورت به اکسل</option>
+            <option value="pdf">اکسپورت به PDF</option>
+        </select>
+    </div>
+
+    <!-- ۵: لیست گزارشات -->
+    <div class="reports-list" id="reports-list"></div>
+     <!-- ۶: فوتر -->
+    <footer class="bottom-nav">
+    <a href="">
+    <div class="nav-item" data-page="costs" onclick="navigate('costs', this)">
+        <i class="fas fa-money-bill-wave"></i>
+        <span>هزینه‌ها</span>
+        <div class="indicator"></div>
+    </div>
+</a>
+<a href="pending_orders.html">
+    <div class="nav-item " data-page="orders" onclick="navigate('orders', this)">
+        <i class="fas fa-box-open"></i>
+        <span>سفارش‌ها</span>
+        <div class="indicator"></div>
+    </div>
+</a>
+    <!-- این یکی همیشه nav-home داره (برجسته و دایره سفید) -->
+     <a href="index.html">
+    <div class="nav-item nav-home" data-page="home" onclick="navigate('home', this)">
+        <div class="home-circle">
+            <i class="fas fa-home"></i>
+        </div>
+        <span>خانه</span>
+        <div class="indicator"></div>
+    </div>
+</a>
+<a href="inventory.html">
+    <div class="nav-item" data-page="inventory" onclick="navigate('inventory', this)">
+        <i class="fas fa-warehouse"></i>
+        <span>انبار</span>
+        <div class="indicator"></div>
+    </div>
+</a>
+<a href="reports.html">
+    <div class="nav-item active" data-page="reports" onclick="navigate('reports', this)">
+        <i class="fas fa-chart-bar"></i>
+        <span>گزارشات</span>
+        <div class="indicator"></div>
+    </div>
+</a>  
+</footer>
+    <script>
+        // داده‌های تستی (فقط تحویل‌شده‌ها + چند لغو شده برای فیلتر - تاریخ‌ها بروزرسانی شده به 2026) + اضافه کردن شماره تلفن
+        const orders = [
+            { id: '001', customer: 'علی احمدی', source: 'اینستاگرام', registerDate: new Date('2026-01-01'), deliveryDate: new Date('2026-01-05'), amount: 1500000, products: [{name: 'پیراشکی', qty: 20, price: 50000}, {name: 'کیک', qty: 2, price: 250000}], address: 'تهران', notes: 'فوری', status: 'delivered', type: 'personal', phone: '09121234567' },
+            { id: '002', customer: 'فاطمه محمدی', source: 'سایت', registerDate: new Date('2026-01-02'), deliveryDate: new Date('2026-01-06'), amount: 500000, products: [{name: 'دونات', qty: 10, price: 50000}], address: 'اصفهان', notes: '', status: 'delivered', type: 'corporate', phone: '09331234567' },
+            { id: '003', customer: 'محمد رضایی', source: 'تلفنی', registerDate: new Date('2026-01-25'), deliveryDate: new Date('2026-01-29'), amount: 800000, products: [{name: 'مینی پیتزا', qty: 15, price: 50000}], address: 'شیراز', notes: 'با بسته‌بندی', status: 'delivered', type: 'personal', phone: '09141234567' },
+            { id: '004', customer: 'سارا علوی', source: 'حضوری', registerDate: new Date('2026-02-03'), deliveryDate: new Date('2026-02-07'), amount: 1200000, products: [{name: 'پیراشکی', qty: 10, price: 50000}, {name: 'کیک', qty: 3, price: 200000}], address: 'مشهد', notes: '', status: 'delivered', type: 'personal', phone: '09151234567' },
+            { id: '005', customer: 'حسین کریمی', source: 'سایر', registerDate: new Date('2026-02-04'), deliveryDate: new Date('2026-02-08'), amount: 300000, products: [{name: 'دونات', qty: 5, price: 60000}], address: 'تبریز', notes: 'هدیه', status: 'delivered', type: 'corporate', phone: '09161234567' },
+            { id: '006', customer: 'زهرا حسینی', source: 'اینستاگرام', registerDate: new Date('2025-12-20'), deliveryDate: new Date('2025-12-24'), amount: 450000, products: [{name: 'مینی پیتزا', qty: 9, price: 50000}], address: 'کرج', notes: '', status: 'delivered', type: 'personal', phone: '09171234567' },
+            { id: '007', customer: 'رضا نوری', source: 'سایت', registerDate: new Date('2026-01-05'), deliveryDate: new Date('2026-01-09'), amount: 2000000, products: [{name: 'پیراشکی', qty: 40, price: 50000}], address: 'اهواز', notes: 'کارت تبریک', status: 'delivered', type: 'personal', phone: '09181234567' },
+            { id: '008', customer: 'مینا صالحی', source: 'تلفنی', registerDate: new Date('2026-01-06'), deliveryDate: new Date('2026-01-10'), amount: 700000, products: [{name: 'کیک', qty: 1, price: 700000}], address: 'رشت', notes: '', status: 'delivered', type: 'corporate', phone: '09191234567' },
+            { id: '009', customer: 'امیر طاهری', source: 'حضوری', registerDate: new Date('2025-02-07'), deliveryDate: new Date('2025-02-11'), amount: 900000, products: [{name: 'دونات', qty: 15, price: 60000}], address: 'یزد', notes: '', status: 'delivered', type: 'personal', phone: '09201234567' },
+            { id: '010', customer: 'نازنین جعفری', source: 'سایر', registerDate: new Date('2026-01-08'), deliveryDate: new Date('2026-01-12'), amount: 1100000, products: [{name: 'مینی پیتزا', qty: 20, price: 55000}], address: 'قم', notes: 'فوری', status: 'delivered', type: 'personal', phone: '09211234567' },
+            { id: '011', customer: 'پوریا رضایی', source: 'اینستاگرام', registerDate: new Date('2026-01-15'), deliveryDate: new Date('2026-01-19'), amount: 600000, products: [{name: 'پیراشکی', qty: 12, price: 50000}], address: 'کیش', notes: '', status: 'canceled', type: 'corporate', phone: '09221234567' },
+            { id: '012', customer: 'لیلا میرزایی', source: 'سایت', registerDate: new Date('2026-02-01'), deliveryDate: new Date('2026-02-05'), amount: 850000, products: [{name: 'کیک', qty: 2, price: 425000}], address: 'مازندران', notes: 'با دکور', status: 'canceled', type: 'personal', phone: '09231234567' }
+        ];
+        // تابع فرمت عدد فارسی
+        function formatNumber(num) {
+            return num.toLocaleString('fa-IR') + ' تومان';
+        }
+        function formatDate(date) {
+            return date.toLocaleDateString('fa-IR');
+        }
+        // محاسبه آمار
+        function calculateStats(filteredOrders) {
+            const delivered = filteredOrders.filter(o => o.status === 'delivered' || document.getElementById('canceled-toggle').classList.contains('active'));
+            const totalRevenue = delivered.reduce((sum, o) => sum + o.amount, 0);
+            const avgValue = delivered.length > 0 ? Math.round(totalRevenue / delivered.length) : 0;
+            const ordersCount = delivered.length;
+            // پرفروش‌ترین محصول
+            const productSales = {};
+            delivered.forEach(o => {
+                o.products.forEach(p => {
+                    productSales[p.name] = (productSales[p.name] || 0) + p.qty;
+                });
+            });
+            const topProduct = Object.entries(productSales).sort((a, b) => b[1] - a[1])[0] || ['نامعلوم', 0];
+            document.getElementById('avg-value').textContent = formatNumber(avgValue);
+            document.getElementById('total-revenue').textContent = formatNumber(totalRevenue);
+            document.getElementById('top-product').textContent = `${topProduct[0]} (${topProduct[1]} عدد)`;
+            document.getElementById('orders-count').textContent = ordersCount;
+        }
+        // رندر کارت‌ها
+        function renderReports(filteredOrders) {
+            const list = document.getElementById('reports-list');
+            list.innerHTML = '';
+            filteredOrders.forEach(order => {
+                const card = document.createElement('div');
+                card.classList.add('report-card');
+                if (order.status === 'canceled') {
+                    card.classList.add('canceled');
+                }
+                card.innerHTML = `
+                    <div class="report-header">
+                        <div class="order-code">کد: ${order.id}</div>
+                    </div>
+                    <div class="customer-name">${order.customer}</div>
+                    <div class="source">${order.source}</div>
+                    <div class="dates">ثبت: ${formatDate(order.registerDate)}<br>تحویل: ${formatDate(order.deliveryDate)}</div>
+                    <div class="amount">${formatNumber(order.amount)}</div>
+                    <div class="report-details">
+                        <div>آدرس: ${order.address}</div>
+                        <div>شماره: ${order.phone}</div>
+                        <ul class="products-list">
+                            ${order.products.map(p => `<li>${p.name} × ${p.qty} × ${formatNumber(p.price)}</li>`).join('')}
+                        </ul>
+                        ${order.notes ? `<div class="notes">توضیحات: ${order.notes}</div>` : ''}
+                    </div>
+                `;
+                card.addEventListener('click', (e) => {
+                    if (!e.target.closest('button')) {
+                        card.classList.toggle('expanded');
+                    }
+                });
+                list.appendChild(card);
+            });
+            calculateStats(filteredOrders);
+        }
+        // فیلتر کلی
+        function applyFilters() {
+            let filtered = orders;
+            const search = document.getElementById('search-input').value.trim();
+            const time = document.getElementById('time-filter').value;
+            const source = document.getElementById('source-filter').value;
+            const showCanceled = document.getElementById('canceled-toggle').classList.contains('active');
+            const showCorporate = document.getElementById('corporate-toggle').classList.contains('active');
+            // جستجو کد
+            if (search) filtered = filtered.filter(o => o.id.includes(search));
+            // منبع
+            if (source !== 'all') filtered = filtered.filter(o => o.source === source);
+            // شرکتی
+            if (showCorporate) filtered = filtered.filter(o => o.type === 'corporate');
+            // لغو شده‌ها
+            if (!showCanceled) filtered = filtered.filter(o => o.status === 'delivered');
+            // زمان (بر اساس تاریخ فعلی)
+            const now = new Date();
+            if (time === 'weekly') {
+                const weekAgo = new Date(now);
+                weekAgo.setDate(weekAgo.getDate() - 7);
+                filtered = filtered.filter(o => o.deliveryDate >= weekAgo);
+            } else if (time === 'monthly') {
+                const monthAgo = new Date(now);
+                monthAgo.setMonth(monthAgo.getMonth() - 1);
+                filtered = filtered.filter(o => o.deliveryDate >= monthAgo);
+            } else if (time === 'yearly') {
+                const yearAgo = new Date(now);
+                yearAgo.setFullYear(yearAgo.getFullYear() - 1);
+                filtered = filtered.filter(o => o.deliveryDate >= yearAgo);
+            }
+            renderReports(filtered);
+        }
+        // اکسپورت به اکسل
+        function exportToExcel() {
+            const filteredOrders = getFilteredOrders();
+            const data = filteredOrders.map(order => ({
+                کد: order.id,
+                مشتری: order.customer,
+                منبع: order.source,
+                'تاریخ ثبت': formatDate(order.registerDate),
+                'تاریخ تحویل': formatDate(order.deliveryDate),
+                مبلغ: order.amount,
+                آدرس: order.address,
+                شماره: order.phone,
+                وضعیت: order.status,
+                نوع: order.type,
+                توضیحات: order.notes,
+                محصولات: order.products.map(p => `${p.name} × ${p.qty} × ${p.price}`).join('; ')
+            }));
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'گزارشات');
+            XLSX.writeFile(wb, 'گزارشات_مالی.xlsx');
+        }
+        // اکسپورت به PDF
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'landscape' });
+            doc.setFont('Vazirmatn');
+            doc.setFontSize(12);
+            doc.text('گزارشات مالی', 140, 10, { align: 'center' });
+            const filteredOrders = getFilteredOrders();
+            let y = 20;
+            filteredOrders.forEach(order => {
+                doc.text(`کد: ${order.id} - مشتری: ${order.customer} - مبلغ: ${formatNumber(order.amount)}`, 10, y);
+                y += 10;
+                doc.text(`آدرس: ${order.address} - شماره: ${order.phone}`, 10, y);
+                y += 10;
+                doc.text('-------------------------', 10, y);
+                y += 10;
+            });
+            doc.save('گزارشات_مالی.pdf');
+        }
+        // تابع کمکی برای گرفتن سفارش‌های فیلتر شده
+        function getFilteredOrders() {
+            let filtered = orders;
+            const search = document.getElementById('search-input').value.trim();
+            const time = document.getElementById('time-filter').value;
+            const source = document.getElementById('source-filter').value;
+            const showCanceled = document.getElementById('canceled-toggle').classList.contains('active');
+            const showCorporate = document.getElementById('corporate-toggle').classList.contains('active');
+            if (search) filtered = filtered.filter(o => o.id.includes(search));
+            if (source !== 'all') filtered = filtered.filter(o => o.source === source);
+            if (showCorporate) filtered = filtered.filter(o => o.type === 'corporate');
+            if (!showCanceled) filtered = filtered.filter(o => o.status === 'delivered');
+            const now = new Date();
+            if (time === 'weekly') {
+                const weekAgo = new Date(now);
+                weekAgo.setDate(weekAgo.getDate() - 7);
+                filtered = filtered.filter(o => o.deliveryDate >= weekAgo);
+            } else if (time === 'monthly') {
+                const monthAgo = new Date(now);
+                monthAgo.setMonth(monthAgo.getMonth() - 1);
+                filtered = filtered.filter(o => o.deliveryDate >= monthAgo);
+            } else if (time === 'yearly') {
+                const yearAgo = new Date(now);
+                yearAgo.setFullYear(yearAgo.getFullYear() - 1);
+                filtered = filtered.filter(o => o.deliveryDate >= yearAgo);
+            }
+            return filtered;
+        }
+        // 이벤트ها
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('search-input').addEventListener('input', applyFilters);
+            document.getElementById('time-filter').addEventListener('change', applyFilters);
+            document.getElementById('source-filter').addEventListener('change', applyFilters);
+            document.getElementById('canceled-toggle').addEventListener('click', () => {
+                document.getElementById('canceled-toggle').classList.toggle('active');
+                applyFilters();
+            });
+            document.getElementById('corporate-toggle').addEventListener('click', () => {
+                document.getElementById('corporate-toggle').classList.toggle('active');
+                applyFilters();
+            });
+            applyFilters(); // اولیه
+        });
+        document.getElementById('export-select').addEventListener('change', (e) => {
+    if (e.target.value === 'excel') exportToExcel();
+    else if (e.target.value === 'pdf') exportToPDF();
+    e.target.value = ''; // برگرداندن به "اکسپورت..."
+});
+        function navigate(page) {
+            alert(`رفتن به: ${page}`);
+        }
+    </script>
+</body>
+</html>
