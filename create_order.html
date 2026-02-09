@@ -514,6 +514,15 @@
             });
             $('#total-amount').text('جمع کل: ' + total.toLocaleString() + ' تومان');
         }
+        
+ //اینم برا همون فایل سی وی هست که باید برا تمام فیال ها توی قسمت اسکریپت اضافه بشه 
+        if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/firouzeh_assistant/sw.js')
+        .then(reg => console.log('Service Worker ثبت شد!', reg))
+        .catch(err => console.log('خطا:', err));
+    });
+  }
     </script>
 </body>
 </html>
