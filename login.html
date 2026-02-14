@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firouzeh Assistant - ورود و ثبت‌نام</title>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+        }
+        .bg-gradient-bg {
+            background: linear-gradient(to bottom, #ffffff, #e0f7fa);
+        }
+        .transition-transform {
+            transition: transform 0.5s ease-in-out;
+        }
+        .loading {
+            position: relative;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        .loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin-left: -10px;
+            margin-top: -10px;
+            border: 3px solid #fff;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .alert {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            min-width: 300px;
+            text-align: center;
+            animation: slideDown 0.3s ease;
+        }
+        @keyframes slideDown {
+            from { top: -100px; opacity: 0; }
+            to { top: 20px; opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gradient-bg flex items-center justify-center min-h-screen text-gray-800 p-4">
+    <!-- نوتیفیکیشن -->
+    <div id="notification" class="alert hidden"></div>
+
+    <div class="container max-w-md w-full p-6 bg-white/30 backdrop-blur-sm rounded-2xl shadow-xl">
+        <!-- لوگو و عنوان -->
+        <div class="text-center mb-6">
+            <div class="w-20 h-20 bg-teal-800 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg">
+                <span class="text-white text-3xl font-bold">F</span>
+            </div>
+            <h1 class="text-2xl font-bold text-teal-800">فیروزه اسیستنت</h1>
+            <p class="text-sm text-gray-600 mt-1">سیستم هوشمند مدیریت کسب‌وکار</p>
+        </div>
+        
+        <!-- تب‌ها -->
+        <div class="tab-container flex justify-center mb-6 bg-gray-100/80 backdrop-blur-sm rounded-xl p-1">
+            <button class="tab flex-1 py-2.5 px-4 text-teal-800 font-medium rounded-lg transition-all duration-300 active:bg-teal-800 active:text-white" onclick="showForm('login')">ورود</button>
+            <button class="tab flex-1 py-2.5 px-4 text-teal-800 font-medium rounded-lg transition-all duration-300" onclick="showForm('signup')">ثبت‌نام</button>
+        </div>
+        
+        <!-- کانتینر فرم‌ها -->
+        <div class="form-container bg-white p-6 rounded-xl shadow-lg">
+            <!-- ========== فرم ورود ========== -->
+            <form id="login-form" class="block" onsubmit="handleLogin(event)">
+                <div class="input-group mb-4">
+                    <label class="block text-sm font-medium text-teal-800 mb-1">
+                        <span class="inline-flex items-center">
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/>
+                            </svg>
+                            کد کسب‌وکار
+                        </span>
+                    </label>
+                    <input type="text" id="login-code" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="مثال: FZ-123456">
+                </div>
+                <div class="input-group mb-4">
+                    <label class="block text-sm font-medium text-teal-800 mb-1">
+                        <span class="inline-flex items-center">
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                            </svg>
+                            رمز عبور
+                        </span>
+                    </label>
+                    <input type="password" id="login-password" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="••••••••">
+                </div>
+                
+                <div class="forgot-links text-left mb-4 space-y-1">
+                    <a href="#" onclick="showForgotPassword()" class="block text-xs text-teal-600 hover:text-teal-800 hover:underline">
+                        فراموشی رمز عبور؟
+                    </a>
+                    <a href="#" onclick="showForgotCode()" class="block text-xs text-teal-600 hover:text-teal-800 hover:underline">
+                        فراموشی کد کسب‌وکار؟
+                    </a>
+                </div>
+                
+                <button type="submit" id="login-btn" class="w-full py-3 bg-teal-800 text-white rounded-lg font-medium hover:bg-teal-900 transition-colors duration-300 flex items-center justify-center">
+                    <span>ورود به پنل</span>
+                </button>
+            </form>
+            
+            <!-- ========== فرم ثبت‌نام چند مرحله‌ای ========== -->
+            <form id="signup-form" class="hidden" onsubmit="handleSignup(event)">
+                <!-- مرحله شمارنده -->
+                <div class="flex justify-between items-center mb-6">
+                    <span class="text-xs text-gray-500">مرحله <span id="current-step">1</span> از 3</span>
+                    <div class="flex space-x-1 space-x-reverse">
+                        <span class="step-indicator w-2 h-2 bg-teal-800 rounded-full"></span>
+                        <span class="step-indicator w-2 h-2 bg-gray-300 rounded-full"></span>
+                        <span class="step-indicator w-2 h-2 bg-gray-300 rounded-full"></span>
+                    </div>
+                </div>
+
+                <div class="slider-container overflow-hidden">
+                    <div class="slider flex transition-transform duration-500" id="signup-slider" style="transform: translateX(0);">
+                        <!-- مرحله ۱: شماره تلفن -->
+                        <div class="slide min-w-full px-1">
+                            <div class="text-center mb-4">
+                                <div class="w-16 h-16 bg-teal-100 rounded-full mx-auto flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-teal-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-bold text-teal-800 mt-2">شماره تماس</h3>
+                                <p class="text-xs text-gray-500">شماره موبایل خود را وارد کنید</p>
+                            </div>
+                            <div class="input-group mb-4">
+                                <input type="tel" id="signup-mobile" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="مثال: 09121234567" dir="ltr">
+                            </div>
+                            <button type="button" id="send-otp-btn" onclick="sendOTP()" class="w-full py-3 bg-teal-800 text-white rounded-lg font-medium hover:bg-teal-900 transition-colors duration-300 flex items-center justify-center">
+                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                                </svg>
+                                ارسال کد تایید
+                            </button>
+                        </div>
+                        
+                        <!-- مرحله ۲: کد تایید (OTP) -->
+                        <div class="slide min-w-full px-1">
+                            <div class="text-center mb-4">
+                                <div class="w-16 h-16 bg-teal-100 rounded-full mx-auto flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-teal-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"/>
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-bold text-teal-800 mt-2">کد تایید</h3>
+                                <p class="text-xs text-gray-500">کد ارسال شده به شماره <span id="display-mobile" class="font-bold"></span></p>
+                                <p class="text-xs text-red-500 mt-1" id="timer">02:00</p>
+                            </div>
+                            <div class="input-group mb-4">
+                                <input type="text" id="signup-otp" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-center text-lg tracking-widest" placeholder="••••••" maxlength="6" dir="ltr">
+                            </div>
+                            <button type="button" id="verify-otp-btn" onclick="verifyOTP()" class="w-full py-3 bg-teal-800 text-white rounded-lg font-medium hover:bg-teal-900 transition-colors duration-300">
+                                تایید و ادامه
+                            </button>
+                            <button type="button" onclick="resendOTP()" class="w-full py-2 mt-2 text-teal-600 text-sm hover:underline">
+                                ارسال مجدد کد
+                            </button>
+                        </div>
+                        
+                        <!-- مرحله ۳: اطلاعات نهایی -->
+                        <div class="slide min-w-full px-1">
+                            <div class="text-center mb-4">
+                                <div class="w-16 h-16 bg-teal-100 rounded-full mx-auto flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-teal-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-bold text-teal-800 mt-2">اطلاعات حساب</h3>
+                                <p class="text-xs text-gray-500">رمز عبور خود را تنظیم کنید</p>
+                            </div>
+                            
+                            <!-- کد کسب‌وکار خودکار -->
+                            <div class="input-group mb-4">
+                                <label class="block text-sm font-medium text-teal-800 mb-1">کد کسب‌وکار</label>
+                                <div class="flex">
+                                    <input type="text" id="signup-business-code" class="flex-1 p-3 border border-gray-300 rounded-r-lg bg-gray-100 text-gray-700 font-mono" readonly>
+                                    <button type="button" onclick="copyBusinessCode()" class="px-4 bg-gray-200 border border-r-0 border-gray-300 rounded-l-lg hover:bg-gray-300 transition-colors">
+                                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- نام کسب‌وکار -->
+                            <div class="input-group mb-4">
+                                <label class="block text-sm font-medium text-teal-800 mb-1">نام کسب‌وکار</label>
+                                <input type="text" id="signup-business-name" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="مثال: فروشگاه فیروزه">
+                            </div>
+                            
+                            <!-- رمز عبور -->
+                            <div class="input-group mb-4">
+                                <label class="block text-sm font-medium text-teal-800 mb-1">رمز عبور</label>
+                                <input type="password" id="signup-password" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="حداقل ۸ کاراکتر">
+                            </div>
+                            
+                            <!-- تکرار رمز عبور -->
+                            <div class="input-group mb-4">
+                                <label class="block text-sm font-medium text-teal-800 mb-1">تکرار رمز عبور</label>
+                                <input type="password" id="signup-password-confirm" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="تکرار رمز عبور">
+                            </div>
+                            
+                            <button type="submit" id="signup-btn" class="w-full py-3 bg-teal-800 text-white rounded-lg font-medium hover:bg-teal-900 transition-colors duration-300">
+                                تکمیل ثبت‌نام
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- فوتر -->
+        <div class="text-center mt-6 text-xs text-gray-500">
+            <p>فیروزه اسیستنت - همه حقوق محفوظ است © ۱۴۰۴</p>
+        </div>
+    </div>
+
+    <!-- مودال فراموشی رمز/کد -->
+    <div id="forgot-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+            <div id="forgot-content"></div>
+        </div>
+    </div>
+
+    <script>
+        // ============== تنظیمات ==============
+        const API_BASE_URL = 'http://127.0.0.1:8000/api/accounts';
+        
+        // ============== توابع کمکی ==============
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.remove('hidden', 'bg-green-500', 'bg-red-500', 'bg-blue-500');
+            
+            if (type === 'success') {
+                notification.classList.add('bg-green-500', 'text-white');
+            } else if (type === 'error') {
+                notification.classList.add('bg-red-500', 'text-white');
+            } else {
+                notification.classList.add('bg-blue-500', 'text-white');
+            }
+            
+            notification.classList.remove('hidden');
+            
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 3000);
+        }
+
+        function setLoading(buttonId, isLoading) {
+            const btn = document.getElementById(buttonId);
+            if (isLoading) {
+                btn.classList.add('loading');
+                btn.disabled = true;
+            } else {
+                btn.classList.remove('loading');
+                btn.disabled = false;
+            }
+        }
+
+        // ============== نمایش فرم‌ها ==============
+        function showForm(formType) {
+            const loginForm = document.getElementById('login-form');
+            const signupForm = document.getElementById('signup-form');
+            const tabs = document.querySelectorAll('.tab');
+            
+            loginForm.classList.add('hidden');
+            signupForm.classList.add('hidden');
+            tabs.forEach(tab => {
+                tab.classList.remove('bg-teal-800', 'text-white');
+                tab.classList.add('text-teal-800', 'bg-transparent');
+            });
+            
+            if (formType === 'login') {
+                loginForm.classList.remove('hidden');
+                tabs[0].classList.add('bg-teal-800', 'text-white');
+            } else {
+                signupForm.classList.remove('hidden');
+                tabs[1].classList.add('bg-teal-800', 'text-white');
+                resetSignupForm();
+            }
+        }
+
+        // ============== ثبت‌نام ==============
+        let signupData = {
+            mobile: '',
+            otp: '',
+            business_code: '',
+            business_name: '',
+            password: ''
+        };
+
+        function resetSignupForm() {
+            const slider = document.getElementById('signup-slider');
+            slider.style.transform = 'translateX(0)';
+            document.getElementById('current-step').textContent = '1';
+            
+            // آپدیت اندیکاتورها
+            const indicators = document.querySelectorAll('.step-indicator');
+            indicators.forEach((ind, idx) => {
+                if (idx === 0) ind.classList = 'w-2 h-2 bg-teal-800 rounded-full';
+                else ind.classList = 'w-2 h-2 bg-gray-300 rounded-full';
+            });
+            
+            // پاک کردن فیلدها
+            document.getElementById('signup-mobile').value = '';
+            document.getElementById('signup-otp').value = '';
+            document.getElementById('signup-business-name').value = '';
+            document.getElementById('signup-password').value = '';
+            document.getElementById('signup-password-confirm').value = '';
+            document.getElementById('signup-business-code').value = '';
+        }
+
+        function nextSlide(step) {
+            const slider = document.getElementById('signup-slider');
+            const slideWidth = slider.children[0].offsetWidth;
+            slider.style.transform = `translateX(-${step * slideWidth}px)`;
+            
+            document.getElementById('current-step').textContent = step + 1;
+            
+            // آپدیت اندیکاتورها
+            const indicators = document.querySelectorAll('.step-indicator');
+            indicators.forEach((ind, idx) => {
+                if (idx <= step) ind.classList = 'w-2 h-2 bg-teal-800 rounded-full';
+                else ind.classList = 'w-2 h-2 bg-gray-300 rounded-full';
+            });
+        }
+
+        async function sendOTP() {
+            const mobile = document.getElementById('signup-mobile').value.trim();
+            
+            if (!mobile.match(/^09[0-9]{9}$/)) {
+                showNotification('شماره موبایل باید با ۰۹ شروع شود و ۱۱ رقم باشد', 'error');
+                return;
+            }
+            
+            signupData.mobile = mobile;
+            document.getElementById('display-mobile').textContent = mobile;
+            
+            setLoading('send-otp-btn', true);
+            
+            try {
+                const response = await axios.post(`${API_BASE_URL}/send-otp/`, { mobile }, { withCredentials: true });
+                
+                if (response.data.success) {
+                    showNotification('کد تایید ارسال شد', 'success');
+                    nextSlide(1);
+                    startTimer();
+                } else {
+                    showNotification(response.data.error || 'خطا در ارسال کد', 'error');
+                }
+            } catch (error) {
+                showNotification(error.response?.data?.error || 'خطا در ارتباط با سرور', 'error');
+            } finally {
+                setLoading('send-otp-btn', false);
+            }
+        }
+
+        async function resendOTP() {
+            await sendOTP();  // Reuse sendOTP logic for resend
+        }
+
+        function startTimer() {
+            let timeLeft = 120;
+            const timerElement = document.getElementById('timer');
+            timerElement.textContent = '02:00';  // Reset timer display
+            
+            const timer = setInterval(() => {
+                timeLeft--;
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    timerElement.textContent = 'کد منقضی شد';
+                }
+            }, 1000);
+        }
+
+        async function verifyOTP() {
+            const otp = document.getElementById('signup-otp').value.trim();
+            
+            if (otp.length !== 6 || !/^\d{6}$/.test(otp)) {
+                showNotification('کد تایید باید ۶ رقم باشد', 'error');
+                return;
+            }
+            
+            signupData.otp = otp;
+            
+            setLoading('verify-otp-btn', true);
+            
+            try {
+                const response = await axios.post(`${API_BASE_URL}/verify-otp/`, {
+                    mobile: signupData.mobile,
+                    otp: signupData.otp
+                }, { withCredentials: true });
+                
+                if (response.data.success) {
+                    signupData.business_code = response.data.business_code;
+                    document.getElementById('signup-business-code').value = signupData.business_code;
+                    showNotification('کد تایید شد', 'success');
+                    nextSlide(2);
+                } else {
+                    showNotification(response.data.error || 'کد تایید اشتباه است', 'error');
+                }
+            } catch (error) {
+                showNotification(error.response?.data?.error || 'خطا در تایید کد', 'error');
+            } finally {
+                setLoading('verify-otp-btn', false);
+            }
+        }
+
+        async function handleSignup(event) {
+            event.preventDefault();
+            
+            const businessName = document.getElementById('signup-business-name').value.trim();
+            const password = document.getElementById('signup-password').value;
+            const passwordConfirm = document.getElementById('signup-password-confirm').value;
+            
+            if (!businessName) {
+                showNotification('نام کسب‌وکار را وارد کنید', 'error');
+                return;
+            }
+            
+            if (password.length < 8) {
+                showNotification('رمز عبور باید حداقل ۸ کاراکتر باشد', 'error');
+                return;
+            }
+            
+            if (password !== passwordConfirm) {
+                showNotification('رمز عبور و تکرار آن یکسان نیستند', 'error');
+                return;
+            }
+            
+            signupData.business_name = businessName;
+            signupData.password = password;
+            
+            setLoading('signup-btn', true);
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/signup/`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    credentials: "include",
+                    body: JSON.stringify({
+                        recovery_contact: signupData.mobile,
+                        password: signupData.password
+                    })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification(`ثبت‌نام موفق! کد کسب‌وکار: ${data.business_code}`, 'success');
+                    
+                    localStorage.setItem('business_code', data.business_code);
+                    localStorage.setItem('business_name', data.business_name);
+                    
+                    setTimeout(() => {
+                        window.location.href = '/accounts/dashboard/';
+                    }, 2000);
+                } else {
+                    showNotification(data.error || 'خطا در ثبت‌نام', 'error');
+                }
+            } catch (error) {
+                showNotification(error.message || 'خطا در ثبت‌نام', 'error');
+            } finally {
+                setLoading('signup-btn', false);
+            }
+        }
+
+        // ============== ورود ==============
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const businessCode = document.getElementById('login-code').value.trim();
+            const password = document.getElementById('login-password').value;
+            
+            if (!businessCode || !password) {
+                showNotification('کد کسب‌وکار و رمز عبور را وارد کنید', 'error');
+                return;
+            }
+            
+            setLoading('login-btn', true);
+            
+            try {
+                const response = await axios.post(`${API_BASE_URL}/login/`, {
+                    business_code: businessCode,
+                    password: password
+                }, { withCredentials: true });
+                
+                if (response.data.success) {
+                    showNotification('ورود موفقیت‌آمیز', 'success');
+                    
+                    localStorage.setItem('business_code', response.data.business_code);
+                    localStorage.setItem('business_name', response.data.business_name);
+                    
+                    setTimeout(() => {
+                        window.location.href = '/accounts/dashboard/';
+                    }, 1000);
+                } else {
+                    showNotification(response.data.error || 'خطا در ورود', 'error');
+                }
+            } catch (error) {
+                showNotification(error.response?.data?.error || 'خطا در ورود', 'error');
+            } finally {
+                setLoading('login-btn', false);
+            }
+        }
+
+        // ============== فراموشی رمز/کد ==============
+        function showForgotPassword() {
+            const modal = document.getElementById('forgot-modal');
+            const content = document.getElementById('forgot-content');
+            
+            content.innerHTML = `
+                <h3 class="text-xl font-bold text-teal-800 mb-4">بازیابی رمز عبور</h3>
+                <p class="text-sm text-gray-600 mb-4">شماره موبایل یا ایمیل خود را وارد کنید</p>
+                <input type="text" id="recovery-contact" class="w-full p-3 border border-gray-300 rounded-lg mb-4" placeholder="شماره موبایل یا ایمیل">
+                <button id="send-reset-btn" onclick="sendResetCode()" class="w-full py-3 bg-teal-800 text-white rounded-lg hover:bg-teal-900">
+                    ارسال کد بازیابی
+                </button>
+                <button onclick="closeModal()" class="w-full py-2 mt-2 text-gray-600 hover:underline">
+                    انصراف
+                </button>
+            `;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function showForgotCode() {
+            const modal = document.getElementById('forgot-modal');
+            const content = document.getElementById('forgot-content');
+            
+            content.innerHTML = `
+                <h3 class="text-xl font-bold text-teal-800 mb-4">بازیابی کد کسب‌وکار</h3>
+                <p class="text-sm text-gray-600 mb-4">شماره موبایل خود را وارد کنید</p>
+                <input type="text" id="recovery-mobile" class="w-full p-3 border border-gray-300 rounded-lg mb-4" placeholder="شماره موبایل">
+                <button id="recover-code-btn" onclick="recoverBusinessCode()" class="w-full py-3 bg-teal-800 text-white rounded-lg hover:bg-teal-900">
+                    بازیابی کد
+                </button>
+                <button onclick="closeModal()" class="w-full py-2 mt-2 text-gray-600 hover:underline">
+                    انصراف
+                </button>
+            `;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('forgot-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        async function sendResetCode() {
+            const contact = document.getElementById('recovery-contact').value.trim();
+            if (!contact) {
+                showNotification('اطلاعات تماس را وارد کنید', 'error');
+                return;
+            }
+            
+            setLoading('send-reset-btn', true);
+            
+            try {
+                const response = await axios.post(`${API_BASE_URL}/reset-password/`, { recovery_contact: contact }, { withCredentials: true });
+                
+                if (response.data.success) {
+                    showNotification('کد بازیابی ارسال شد', 'success');
+                    closeModal();
+                } else {
+                    showNotification(response.data.error || 'خطا در ارسال کد', 'error');
+                }
+            } catch (error) {
+                showNotification(error.response?.data?.error || 'خطا در بازیابی', 'error');
+            } finally {
+                setLoading('send-reset-btn', false);
+            }
+        }
+
+        async function recoverBusinessCode() {
+            const mobile = document.getElementById('recovery-mobile').value.trim();
+            if (!mobile.match(/^09[0-9]{9}$/)) {
+                showNotification('شماره موبایل معتبر وارد کنید', 'error');
+                return;
+            }
+            
+            setLoading('recover-code-btn', true);
+            
+            try {
+                const response = await axios.post(`${API_BASE_URL}/recover-code/`, { recovery_contact: mobile }, { withCredentials: true });
+                
+                if (response.data.success) {
+                    showNotification(`کد کسب‌وکار: ${response.data.business_code}`, 'success');
+                    closeModal();
+                } else {
+                    showNotification(response.data.error || 'خطا در بازیابی کد', 'error');
+                }
+            } catch (error) {
+                showNotification(error.response?.data?.error || 'خطا در بازیابی', 'error');
+            } finally {
+                setLoading('recover-code-btn', false);
+            }
+        }
+
+        // ============== کپی کد ==============
+        function copyBusinessCode() {
+            const codeInput = document.getElementById('signup-business-code');
+            codeInput.select();
+            document.execCommand('copy');
+            showNotification('کد کسب‌وکار کپی شد', 'success');
+        }
+
+        // ============== بررسی وضعیت لاگین ==============
+        async function checkAuth() {
+            try {
+                const response = await axios.get(`${API_BASE_URL}/check-auth/`, { withCredentials: true });
+                
+                if (response.data.authenticated) {
+                    if (window.location.pathname === '/' || window.location.pathname.includes('login')) {
+                        window.location.href = '/accounts/dashboard/';
+                    }
+                }
+            } catch (error) {
+                console.log('Not authenticated');
+            }
+        }
+
+        // ============== اجرای اولیه ==============
+        showForm('login');
+        checkAuth();
+
+        // اینترسپتور برای axios
+        axios.defaults.withCredentials = true;
+        axios.defaults.headers.common['Content-Type'] = 'application/json';
+        axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+    </script>
+</body>
+</html>
