@@ -3,659 +3,787 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firouzeh Assistant - ورود و ثبت‌نام</title>
+    <title>ثبت محصول در انبار</title>
+    <!-- فونت فارسی Vazirmatn از Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link rel="manifest" href="/firouzeh_assistant/manifest.json">
+    <!-- Bootstrap CDN برای tooltip -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Font Awesome برای آیکون‌ها -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="csrf-token" content="{{ csrf_token }}">
     <style>
+        /* استایل‌های شما دقیقاً مثل قبل */
+        :root {
+            --primary-color: #00796b;
+            --secondary-color: #004d40;
+            --background-color: #f5f5f5;
+            --text-color: #212121;
+            --border-color: #d0d0d0;
+            --error-color: #d32f2f;
+        }
+
         body {
             font-family: 'Vazirmatn', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            direction: rtl;
+            text-align: right;
         }
-        .bg-gradient-bg {
-            background: linear-gradient(to bottom, #ffffff, #e0f7fa);
+
+        form {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        .transition-transform {
-            transition: transform 0.5s ease-in-out;
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--secondary-color);
         }
-        .loading {
-            position: relative;
-            pointer-events: none;
-            opacity: 0.7;
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: inherit;
         }
-        .loading::after {
-            content: '';
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            top: 50%;
-            left: 50%;
-            margin-left: -10px;
-            margin-top: -10px;
-            border: 3px solid #fff;
-            border-top-color: transparent;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+
+        input[type="file"] {
+            display: none;
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+
+        .category-group {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
         }
-        .alert {
+
+        .category-group select {
+            flex: 2;
+        }
+
+        .category-group button {
+            flex: 1;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .category-group button:hover {
+            background: var(--secondary-color);
+        }
+
+        .code-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .code-group input {
+            flex: 1;
+        }
+
+        .code-group span {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .inventory-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .prices-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .prices-group div {
+            flex: 1;
+        }
+
+        .tooltip-text {
+            color: var(--primary-color);
+            cursor: help;
+            text-decoration: underline dotted;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 1.1em;
+        }
+
+        .submit-btn:hover {
+            background: var(--secondary-color);
+        }
+
+        /* مدال برای دسته‌بندی جدید */
+        .modal {
+            display: none;
             position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 9999;
-            min-width: 300px;
-            text-align: center;
-            animation: slideDown 0.3s ease;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
         }
-        @keyframes slideDown {
-            from { top: -100px; opacity: 0; }
-            to { top: 20px; opacity: 1; }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .modal-content input {
+            margin-bottom: 10px;
+        }
+
+        .modal-content button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .modal-content button:hover {
+            background: var(--secondary-color);
+        }
+
+        .close-modal {
+            float: left;
+            cursor: pointer;
+            font-size: 1.5em;
+        }
+
+        .product-name-group {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .product-name-group input {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .image-preview {
+            position: relative;
+            flex: 0 0 100px;
+            width: 100px;
+            height: 100px;
+            border: 1px dashed var(--border-color);
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background: #fafafa;
+            transition: box-shadow 0.3s, border-color 0.3s;
+        }
+
+        .image-preview:hover {
+            box-shadow: 0 0 8px rgba(0,121,107,0.4);
+            border-color: var(--primary-color);
+        }
+
+        .image-preview i {
+            font-size: 1.2em;
+            color: var(--primary-color);
+        }
+
+        .image-preview span {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .image-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 20;
+            width: 160px;
+            margin-top: 5px;
+        }
+
+        .image-menu button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: none;
+            border: none;
+            text-align: right;
+            cursor: pointer;
+            font-size: 0.95em;
+        }
+
+        .image-menu button:hover {
+            background: var(--background-color);
+        }
+
+        .unit-select {
+            width: 120px;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: white;
+        }
+
+        .inventory-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .inventory-group input {
+            flex: 1;
+        }
+
+        @media (max-width: 600px) {
+            .category-group, .code-group, .prices-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .image-preview {
+                flex: 0 0 50px;
+                width: 80px;
+                height: 50px;
+            }
+
+            .image-preview i {
+                font-size: 1.5em;
+            }
+
+            .image-preview span {
+                font-size: 0.75em;
+            }
+
+            .product-name-group input {
+                min-width: 200px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .product-name-group {
+                flex-direction: column;
+            }
+
+            .image-preview {
+                margin-bottom: 10px;
+            }
         }
     </style>
 </head>
-<body class="bg-gradient-bg flex items-center justify-center min-h-screen text-gray-800 p-4">
-    <!-- نوتیفیکیشن -->
-    <div id="notification" class="alert hidden"></div>
-
-    <div class="container max-w-md w-full p-6 bg-white/30 backdrop-blur-sm rounded-2xl shadow-xl">
-        <!-- لوگو و عنوان -->
-        <div class="text-center mb-6">
-            <div class="w-20 h-20 bg-teal-800 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg">
-                <span class="text-white text-3xl font-bold">F</span>
+<body>
+    <form id="product-form">
+        <!-- نام کالا و عکس محصول -->
+        <label for="product_name">نام کالا:</label>
+        <div class="product-name-group">
+            <div class="image-preview" id="image_preview">
+                <i class="fas fa-camera"></i>
             </div>
-            <h1 class="text-2xl font-bold text-teal-800">فیروزه اسیستنت</h1>
-            <p class="text-sm text-gray-600 mt-1">سیستم هوشمند مدیریت کسب‌وکار</p>
-        </div>
-        
-        <!-- تب‌ها -->
-        <div class="tab-container flex justify-center mb-6 bg-gray-100/80 backdrop-blur-sm rounded-xl p-1">
-            <button class="tab flex-1 py-2.5 px-4 text-teal-800 font-medium rounded-lg transition-all duration-300 active:bg-teal-800 active:text-white" onclick="showForm('login')">ورود</button>
-            <button class="tab flex-1 py-2.5 px-4 text-teal-800 font-medium rounded-lg transition-all duration-300" onclick="showForm('signup')">ثبت‌نام</button>
-        </div>
-        
-        <!-- کانتینر فرم‌ها -->
-        <div class="form-container bg-white p-6 rounded-xl shadow-lg">
-            <!-- ========== فرم ورود ========== -->
-            <form id="login-form" class="block" onsubmit="handleLogin(event)">
-                <div class="input-group mb-4">
-                    <label class="block text-sm font-medium text-teal-800 mb-1">
-                        <span class="inline-flex items-center">
-                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/>
-                            </svg>
-                            کد کسب‌وکار
-                        </span>
-                    </label>
-                    <input type="text" id="login-code" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="مثال: FZ-123456">
-                </div>
-                <div class="input-group mb-4">
-                    <label class="block text-sm font-medium text-teal-800 mb-1">
-                        <span class="inline-flex items-center">
-                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                            </svg>
-                            رمز عبور
-                        </span>
-                    </label>
-                    <input type="password" id="login-password" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="••••••••">
-                </div>
-                
-                <div class="forgot-links text-left mb-4 space-y-1">
-                    <a href="#" onclick="showForgotPassword()" class="block text-xs text-teal-600 hover:text-teal-800 hover:underline">
-                        فراموشی رمز عبور؟
-                    </a>
-                    <a href="#" onclick="showForgotCode()" class="block text-xs text-teal-600 hover:text-teal-800 hover:underline">
-                        فراموشی کد کسب‌وکار؟
-                    </a>
-                </div>
-                
-                <button type="submit" id="login-btn" class="w-full py-3 bg-teal-800 text-white rounded-lg font-medium hover:bg-teal-900 transition-colors duration-300 flex items-center justify-center">
-                    <span>ورود به پنل</span>
-                </button>
-            </form>
-            
-            <!-- ========== فرم ثبت‌نام چند مرحله‌ای ========== -->
-            <form id="signup-form" class="hidden" onsubmit="handleSignup(event)">
-                <!-- مرحله شمارنده -->
-                <div class="flex justify-between items-center mb-6">
-                    <span class="text-xs text-gray-500">مرحله <span id="current-step">1</span> از 3</span>
-                    <div class="flex space-x-1 space-x-reverse">
-                        <span class="step-indicator w-2 h-2 bg-teal-800 rounded-full"></span>
-                        <span class="step-indicator w-2 h-2 bg-gray-300 rounded-full"></span>
-                        <span class="step-indicator w-2 h-2 bg-gray-300 rounded-full"></span>
-                    </div>
-                </div>
-
-                <div class="slider-container overflow-hidden">
-                    <div class="slider flex transition-transform duration-500" id="signup-slider" style="transform: translateX(0);">
-                        <!-- مرحله ۱: شماره تلفن -->
-                        <div class="slide min-w-full px-1">
-                            <div class="text-center mb-4">
-                                <div class="w-16 h-16 bg-teal-100 rounded-full mx-auto flex items-center justify-center">
-                                    <svg class="w-8 h-8 text-teal-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                                    </svg>
-                                </div>
-                                <h3 class="text-lg font-bold text-teal-800 mt-2">شماره تماس</h3>
-                                <p class="text-xs text-gray-500">شماره موبایل خود را وارد کنید</p>
-                            </div>
-                            <div class="input-group mb-4">
-                                <input type="tel" id="signup-mobile" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="مثال: 09121234567" dir="ltr">
-                            </div>
-                            <button type="button" id="send-otp-btn" onclick="sendOTP()" class="w-full py-3 bg-teal-800 text-white rounded-lg font-medium hover:bg-teal-900 transition-colors duration-300 flex items-center justify-center">
-                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
-                                </svg>
-                                ارسال کد تایید
-                            </button>
-                        </div>
-                        
-                        <!-- مرحله ۲: کد تایید (OTP) -->
-                        <div class="slide min-w-full px-1">
-                            <div class="text-center mb-4">
-                                <div class="w-16 h-16 bg-teal-100 rounded-full mx-auto flex items-center justify-center">
-                                    <svg class="w-8 h-8 text-teal-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"/>
-                                    </svg>
-                                </div>
-                                <h3 class="text-lg font-bold text-teal-800 mt-2">کد تایید</h3>
-                                <p class="text-xs text-gray-500">کد ارسال شده به شماره <span id="display-mobile" class="font-bold"></span></p>
-                                <p class="text-xs text-red-500 mt-1" id="timer">02:00</p>
-                            </div>
-                            <div class="input-group mb-4">
-                                <input type="text" id="signup-otp" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-center text-lg tracking-widest" placeholder="••••••" maxlength="6" dir="ltr">
-                            </div>
-                            <button type="button" id="verify-otp-btn" onclick="verifyOTP()" class="w-full py-3 bg-teal-800 text-white rounded-lg font-medium hover:bg-teal-900 transition-colors duration-300">
-                                تایید و ادامه
-                            </button>
-                            <button type="button" onclick="resendOTP()" class="w-full py-2 mt-2 text-teal-600 text-sm hover:underline">
-                                ارسال مجدد کد
-                            </button>
-                        </div>
-                        
-                        <!-- مرحله ۳: اطلاعات نهایی -->
-                        <div class="slide min-w-full px-1">
-                            <div class="text-center mb-4">
-                                <div class="w-16 h-16 bg-teal-100 rounded-full mx-auto flex items-center justify-center">
-                                    <svg class="w-8 h-8 text-teal-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
-                                </div>
-                                <h3 class="text-lg font-bold text-teal-800 mt-2">اطلاعات حساب</h3>
-                                <p class="text-xs text-gray-500">رمز عبور خود را تنظیم کنید</p>
-                            </div>
-                            
-                            <!-- کد کسب‌وکار خودکار -->
-                            <div class="input-group mb-4">
-                                <label class="block text-sm font-medium text-teal-800 mb-1">کد کسب‌وکار</label>
-                                <div class="flex">
-                                    <input type="text" id="signup-business-code" class="flex-1 p-3 border border-gray-300 rounded-r-lg bg-gray-100 text-gray-700 font-mono" readonly>
-                                    <button type="button" onclick="copyBusinessCode()" class="px-4 bg-gray-200 border border-r-0 border-gray-300 rounded-l-lg hover:bg-gray-300 transition-colors">
-                                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <!-- نام کسب‌وکار -->
-                            <div class="input-group mb-4">
-                                <label class="block text-sm font-medium text-teal-800 mb-1">نام کسب‌وکار</label>
-                                <input type="text" id="signup-business-name" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="مثال: فروشگاه فیروزه">
-                            </div>
-                            
-                            <!-- رمز عبور -->
-                            <div class="input-group mb-4">
-                                <label class="block text-sm font-medium text-teal-800 mb-1">رمز عبور</label>
-                                <input type="password" id="signup-password" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="حداقل ۸ کاراکتر">
-                            </div>
-                            
-                            <!-- تکرار رمز عبور -->
-                            <div class="input-group mb-4">
-                                <label class="block text-sm font-medium text-teal-800 mb-1">تکرار رمز عبور</label>
-                                <input type="password" id="signup-password-confirm" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="تکرار رمز عبور">
-                            </div>
-                            
-                            <button type="submit" id="signup-btn" class="w-full py-3 bg-teal-800 text-white rounded-lg font-medium hover:bg-teal-900 transition-colors duration-300">
-                                تکمیل ثبت‌نام
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </form>
+            <input type="text" id="product_name" required>
         </div>
 
-        <!-- فوتر -->
-        <div class="text-center mt-6 text-xs text-gray-500">
-            <p>فیروزه اسیستنت - همه حقوق محفوظ است © ۱۴۰۴</p>
-        </div>
-    </div>
+        <!-- inputهای پنهان برای عکس -->
+        <input type="file" id="file_input" accept="image/*">
+        <input type="file" id="camera_input" accept="image/*" capture="environment">
 
-    <!-- مودال فراموشی رمز/کد -->
-    <div id="forgot-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
-            <div id="forgot-content"></div>
+        <!-- منوی گزینه‌های عکس -->
+        <div class="image-menu" id="image_menu">
+            <button id="take_photo">گرفتن عکس جدید</button>
+            <button id="select_gallery">انتخاب از گالری</button>
+        </div>
+
+        <!-- دسته‌بندی و کد محصول -->
+        <label>دسته‌بندی محصول:</label>
+        <div class="category-group">
+            <select id="category_select" required>
+                <option value="">در حال بارگذاری...</option>
+            </select>
+            <button type="button" id="new_category_btn">ساخت دسته‌بندی جدید</button>
+        </div>
+
+        <label for="product_code">کد محصول:</label>
+        <div class="code-group">
+            <input type="text" id="product_code" maxlength="6" pattern="^\d{2}-\d{3}$" placeholder="XX-XXX" required title="فرمت باید XX-XXX باشد (عددهای ۰-۹)">
+            <span>(دو رقم اول نشان‌دهنده دسته‌بندی)</span>
+        </div>
+
+        <!-- موجودی -->
+        <label for="inventory_count">تعداد موجود در انبار:</label>
+        <div class="inventory-toggle">
+            <input type="checkbox" id="unlimited_checkbox" checked>
+            <label for="unlimited_checkbox">موجودی نامحدود</label>
+        </div>
+        <div class="inventory-group">
+            <input type="text" id="inventory_count" value="نامحدود" disabled>
+            <select class="unit-select" id="unit_select">
+                <option value="عدد" selected>عدد</option>
+                <option value="کیلوگرم">کیلوگرم</option>
+            </select>
+        </div>
+
+        <!-- قیمت‌ها -->
+        <label>قیمت‌ها:</label>
+        <div class="prices-group">
+            <div>
+                <label for="cost_price">قیمت تمام‌شده (ریال):</label>
+                <input type="number" id="cost_price" min="0" required>
+            </div>
+            <div>
+                <label for="sell_price">قیمت فروش (ریال):</label>
+                <input type="number" id="sell_price" min="0" required>
+            </div>
+        </div>
+        <p class="tooltip-text" data-bs-toggle="tooltip" data-bs-placement="top" title="قیمت تمام شده شامل هزینه‌های تولید، مواد اولیه و غیره است که پایه محاسبه سود است.">قیمت تمام شده به چه معناست؟</p>
+
+        <!-- توضیحات -->
+        <label for="description">توضیحات بیشتر (اختیاری):</label>
+        <textarea id="description"></textarea>
+
+        <!-- submit -->
+        <button type="submit" class="submit-btn">ذخیره در انبار</button>
+    </form>
+
+    <!-- مدال برای دسته‌بندی جدید -->
+    <div class="modal" id="category_modal">
+        <div class="modal-content">
+            <span class="close-modal" id="close_modal">×</span>
+            <label for="new_category_name">نام دسته‌بندی جدید:</label>
+            <input type="text" id="new_category_name" required>
+            <button type="button" id="save_category">ذخیره</button>
         </div>
     </div>
 
     <script>
-        // ============== تنظیمات ==============
-        const API_BASE_URL = 'http://127.0.0.1:8000/api/accounts';
+        // ============================================
+        // تنظیمات پایه API
+        // ============================================
+        const API_BASE_URL = 'http://127.0.0.1:8000/api';
+        const BUSINESS_ID = 1;
         
-        // ============== توابع کمکی ==============
-        function showNotification(message, type = 'success') {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.classList.remove('hidden', 'bg-green-500', 'bg-red-500', 'bg-blue-500');
-            
-            if (type === 'success') {
-                notification.classList.add('bg-green-500', 'text-white');
-            } else if (type === 'error') {
-                notification.classList.add('bg-red-500', 'text-white');
-            } else {
-                notification.classList.add('bg-blue-500', 'text-white');
-            }
-            
-            notification.classList.remove('hidden');
-            
-            setTimeout(() => {
-                notification.classList.add('hidden');
-            }, 3000);
-        }
-
-        function setLoading(buttonId, isLoading) {
-            const btn = document.getElementById(buttonId);
-            if (isLoading) {
-                btn.classList.add('loading');
-                btn.disabled = true;
-            } else {
-                btn.classList.remove('loading');
-                btn.disabled = false;
-            }
-        }
-
-        // ============== نمایش فرم‌ها ==============
-        function showForm(formType) {
-            const loginForm = document.getElementById('login-form');
-            const signupForm = document.getElementById('signup-form');
-            const tabs = document.querySelectorAll('.tab');
-            
-            loginForm.classList.add('hidden');
-            signupForm.classList.add('hidden');
-            tabs.forEach(tab => {
-                tab.classList.remove('bg-teal-800', 'text-white');
-                tab.classList.add('text-teal-800', 'bg-transparent');
-            });
-            
-            if (formType === 'login') {
-                loginForm.classList.remove('hidden');
-                tabs[0].classList.add('bg-teal-800', 'text-white');
-            } else {
-                signupForm.classList.remove('hidden');
-                tabs[1].classList.add('bg-teal-800', 'text-white');
-                resetSignupForm();
-            }
-        }
-
-        // ============== ثبت‌نام ==============
-        let signupData = {
-            mobile: '',
-            otp: '',
-            business_code: '',
-            business_name: '',
-            password: ''
+        const getAuthToken = () => {
+            return localStorage.getItem('access_token') || '';
         };
 
-        function resetSignupForm() {
-            const slider = document.getElementById('signup-slider');
-            slider.style.transform = 'translateX(0)';
-            document.getElementById('current-step').textContent = '1';
+        // ============================================
+        // توابع کمکی
+        // ============================================
+        function showMessage(message, type = 'success') {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed top-0 start-50 translate-middle-x mt-3`;
+            msgDiv.style.zIndex = '9999';
+            msgDiv.style.minWidth = '300px';
+            msgDiv.style.textAlign = 'center';
+            msgDiv.innerHTML = message;
+            document.body.appendChild(msgDiv);
             
-            // آپدیت اندیکاتورها
-            const indicators = document.querySelectorAll('.step-indicator');
-            indicators.forEach((ind, idx) => {
-                if (idx === 0) ind.classList = 'w-2 h-2 bg-teal-800 rounded-full';
-                else ind.classList = 'w-2 h-2 bg-gray-300 rounded-full';
-            });
-            
-            // پاک کردن فیلدها
-            document.getElementById('signup-mobile').value = '';
-            document.getElementById('signup-otp').value = '';
-            document.getElementById('signup-business-name').value = '';
-            document.getElementById('signup-password').value = '';
-            document.getElementById('signup-password-confirm').value = '';
-            document.getElementById('signup-business-code').value = '';
+            setTimeout(() => msgDiv.remove(), 3000);
         }
 
-        function nextSlide(step) {
-            const slider = document.getElementById('signup-slider');
-            const slideWidth = slider.children[0].offsetWidth;
-            slider.style.transform = `translateX(-${step * slideWidth}px)`;
-            
-            document.getElementById('current-step').textContent = step + 1;
-            
-            // آپدیت اندیکاتورها
-            const indicators = document.querySelectorAll('.step-indicator');
-            indicators.forEach((ind, idx) => {
-                if (idx <= step) ind.classList = 'w-2 h-2 bg-teal-800 rounded-full';
-                else ind.classList = 'w-2 h-2 bg-gray-300 rounded-full';
-            });
+        function getUnitValue(unitText) {
+            const unitMap = {
+                'عدد': 'number',
+                'کیلوگرم': 'kg',
+                'لیتر': 'liter'
+            };
+            return unitMap[unitText] || 'number';
         }
 
-        async function sendOTP() {
-            const mobile = document.getElementById('signup-mobile').value.trim();
-            
-            if (!mobile.match(/^09[0-9]{9}$/)) {
-                showNotification('شماره موبایل باید با ۰۹ شروع شود و ۱۱ رقم باشد', 'error');
-                return;
-            }
-            
-            signupData.mobile = mobile;
-            document.getElementById('display-mobile').textContent = mobile;
-            
-            setLoading('send-otp-btn', true);
-            
+        // ============================================
+        // دریافت لیست دسته‌بندی‌ها از سرور
+        // ============================================
+        async function loadCategories() {
             try {
-                const response = await axios.post(`${API_BASE_URL}/send-otp/`, { mobile }, { withCredentials: true });
-                
-                if (response.data.success) {
-                    showNotification('کد تایید ارسال شد', 'success');
-                    nextSlide(1);
-                    startTimer();
-                } else {
-                    showNotification(response.data.error || 'خطا در ارسال کد', 'error');
-                }
-            } catch (error) {
-                showNotification(error.response?.data?.error || 'خطا در ارتباط با سرور', 'error');
-            } finally {
-                setLoading('send-otp-btn', false);
-            }
-        }
-
-        async function resendOTP() {
-            await sendOTP();  // Reuse sendOTP logic for resend
-        }
-
-        function startTimer() {
-            let timeLeft = 120;
-            const timerElement = document.getElementById('timer');
-            timerElement.textContent = '02:00';  // Reset timer display
-            
-            const timer = setInterval(() => {
-                timeLeft--;
-                const minutes = Math.floor(timeLeft / 60);
-                const seconds = timeLeft % 60;
-                timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                
-                if (timeLeft <= 0) {
-                    clearInterval(timer);
-                    timerElement.textContent = 'کد منقضی شد';
-                }
-            }, 1000);
-        }
-
-        async function verifyOTP() {
-            const otp = document.getElementById('signup-otp').value.trim();
-            
-            if (otp.length !== 6 || !/^\d{6}$/.test(otp)) {
-                showNotification('کد تایید باید ۶ رقم باشد', 'error');
-                return;
-            }
-            
-            signupData.otp = otp;
-            
-            setLoading('verify-otp-btn', true);
-            
-            try {
-                const response = await axios.post(`${API_BASE_URL}/verify-otp/`, {
-                    mobile: signupData.mobile,
-                    otp: signupData.otp
-                }, { withCredentials: true });
-                
-                if (response.data.success) {
-                    signupData.business_code = response.data.business_code;
-                    document.getElementById('signup-business-code').value = signupData.business_code;
-                    showNotification('کد تایید شد', 'success');
-                    nextSlide(2);
-                } else {
-                    showNotification(response.data.error || 'کد تایید اشتباه است', 'error');
-                }
-            } catch (error) {
-                showNotification(error.response?.data?.error || 'خطا در تایید کد', 'error');
-            } finally {
-                setLoading('verify-otp-btn', false);
-            }
-        }
-
-        async function handleSignup(event) {
-            event.preventDefault();
-            
-            const businessName = document.getElementById('signup-business-name').value.trim();
-            const password = document.getElementById('signup-password').value;
-            const passwordConfirm = document.getElementById('signup-password-confirm').value;
-            
-            if (!businessName) {
-                showNotification('نام کسب‌وکار را وارد کنید', 'error');
-                return;
-            }
-            
-            if (password.length < 8) {
-                showNotification('رمز عبور باید حداقل ۸ کاراکتر باشد', 'error');
-                return;
-            }
-            
-            if (password !== passwordConfirm) {
-                showNotification('رمز عبور و تکرار آن یکسان نیستند', 'error');
-                return;
-            }
-            
-            signupData.business_name = businessName;
-            signupData.password = password;
-            
-            setLoading('signup-btn', true);
-            
-            try {
-                const response = await fetch(`${API_BASE_URL}/signup/`, {
-                    method: "POST",
+                const response = await fetch(`${API_BASE_URL}/categories/`, {
                     headers: {
-                        "Content-Type": "application/json"
-                    },
-                    credentials: "include",
-                    body: JSON.stringify({
-                        recovery_contact: signupData.mobile,
-                        password: signupData.password
-                    })
+                        'Authorization': `Bearer ${getAuthToken()}`,
+                        'Content-Type': 'application/json',
+                    }
                 });
-                const data = await response.json();
                 
-                if (data.success) {
-                    showNotification(`ثبت‌نام موفق! کد کسب‌وکار: ${data.business_code}`, 'success');
-                    
-                    localStorage.setItem('business_code', data.business_code);
-                    localStorage.setItem('business_name', data.business_name);
-                    
-                    setTimeout(() => {
-                        window.location.href = '/index.html';
-                    }, 2000);
-                } else {
-                    showNotification(data.error || 'خطا در ثبت‌نام', 'error');
-                }
+                if (!response.ok) throw new Error('خطا در دریافت دسته‌بندی‌ها');
+                
+                const categories = await response.json();
+                const select = document.getElementById('category_select');
+                select.innerHTML = '<option value="">انتخاب کنید</option>';
+                
+                categories.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat.id;
+                    option.textContent = `${cat.name} (${cat.category_code})`;
+                    option.dataset.code = cat.category_code;
+                    select.appendChild(option);
+                });
+                
             } catch (error) {
-                showNotification(error.message || 'خطا در ثبت‌نام', 'error');
-            } finally {
-                setLoading('signup-btn', false);
+                console.error('خطا:', error);
+                showMessage('خطا در دریافت لیست دسته‌بندی‌ها', 'error');
             }
         }
 
-        // ============== ورود ==============
-        async function handleLogin(event) {
-            event.preventDefault();
+        // ============================================
+        // ساخت دسته‌بندی جدید
+        // ============================================
+        async function createCategory(categoryName) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/categories/`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${getAuthToken()}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name: categoryName })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'خطا در ساخت دسته‌بندی');
+                }
+                
+                const newCategory = await response.json();
+                showMessage('دسته‌بندی با موفقیت ساخته شد');
+                
+                await loadCategories();
+                
+                const select = document.getElementById('category_select');
+                Array.from(select.options).forEach(option => {
+                    if (option.value == newCategory.id) {
+                        option.selected = true;
+                    }
+                });
+                
+                return newCategory;
+                
+            } catch (error) {
+                console.error('خطا:', error);
+                showMessage(error.message, 'error');
+                return null;
+            }
+        }
+
+        // ============================================
+        // تابع اصلی ثبت محصول
+        // ============================================
+        async function submitProduct(formData) {
+            try {
+                if (!formData.name) throw new Error('نام کالا را وارد کنید');
+                if (!formData.category) throw new Error('دسته‌بندی را انتخاب کنید');
+                if (!formData.cost || formData.cost <= 0) throw new Error('قیمت تمام شده را وارد کنید');
+                if (!formData.price || formData.price <= 0) throw new Error('قیمت فروش را وارد کنید');
+                
+                const response = await fetch(`${API_BASE_URL}/products/`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${getAuthToken()}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'خطا در ثبت محصول');
+                }
+                
+                const result = await response.json();
+                showMessage(`✅ محصول با کد ${result.product_code} با موفقیت ثبت شد`);
+                resetForm();
+                return result;
+                
+            } catch (error) {
+                console.error('خطا:', error);
+                showMessage(error.message, 'error');
+                return null;
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('product_name').value = '';
+            document.getElementById('category_select').value = '';
+            document.getElementById('product_code').value = '';
+            document.getElementById('cost_price').value = '';
+            document.getElementById('sell_price').value = '';
+            document.getElementById('description').value = '';
+            document.getElementById('image_preview').innerHTML = '<i class="fas fa-camera"></i>';
+            document.getElementById('unlimited_checkbox').checked = true;
+            document.getElementById('inventory_count').value = 'نامحدود';
+            document.getElementById('inventory_count').disabled = true;
+        }
+
+        function prepareFormData() {
+            const categorySelect = document.getElementById('category_select');
+            const unitSelect = document.getElementById('unit_select');
+            const unlimited = document.getElementById('unlimited_checkbox').checked;
             
-            const businessCode = document.getElementById('login-code').value.trim();
-            const password = document.getElementById('login-password').value;
+            const productData = {
+                name: document.getElementById('product_name').value.trim(),
+                category: categorySelect.value,
+                unit: getUnitValue(unitSelect.value),
+                cost: parseInt(document.getElementById('cost_price').value) || 0,
+                price: parseInt(document.getElementById('sell_price').value) || 0,
+                description: document.getElementById('description').value.trim() || '',
+                unlimited_stock: unlimited,
+            };
             
-            if (!businessCode || !password) {
-                showNotification('کد کسب‌وکار و رمز عبور را وارد کنید', 'error');
-                return;
+            const manualCode = document.getElementById('product_code').value.trim();
+            if (manualCode) {
+                productData.product_code = manualCode.replace('-', '');
             }
             
-            setLoading('login-btn', true);
+            return productData;
+        }
+
+        async function uploadProductImage(productId, imageFile) {
+            if (!imageFile) return;
+            
+            const formData = new FormData();
+            formData.append('image', imageFile);
             
             try {
-                const response = await axios.post(`${API_BASE_URL}/login/`, {
-                    business_code: businessCode,
-                    password: password
-                }, { withCredentials: true });
+                await fetch(`${API_BASE_URL}/products/${productId}/upload-image/`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${getAuthToken()}` },
+                    body: formData
+                });
+            } catch (error) {
+                console.warn('خطا در آپلود عکس:', error);
+            }
+        }
+
+        async function login(username, password) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/token/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
                 
-                if (response.data.success) {
-                    showNotification('ورود موفقیت‌آمیز', 'success');
+                if (response.ok) {
+                    const data = await response.json();
+                    localStorage.setItem('access_token', data.access);
+                    localStorage.setItem('refresh_token', data.refresh);
+                    return true;
+                }
+            } catch (error) {
+                console.error('خطا در ورود:', error);
+            }
+            return false;
+        }
+
+        // ============================================
+        // رویدادهای اصلی
+        // ============================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            
+            // مدیریت باکس عکس
+            const imagePreview = document.getElementById('image_preview');
+            const imageMenu = document.getElementById('image_menu');
+            const fileInput = document.getElementById('file_input');
+            const cameraInput = document.getElementById('camera_input');
+            const takePhotoBtn = document.getElementById('take_photo');
+            const selectGalleryBtn = document.getElementById('select_gallery');
+
+            imagePreview.addEventListener('click', (e) => {
+                e.stopPropagation();
+                imageMenu.style.display = 'block';
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!imagePreview.contains(e.target)) {
+                    imageMenu.style.display = 'none';
+                }
+            });
+
+            selectGalleryBtn.addEventListener('click', () => fileInput.click());
+            takePhotoBtn.addEventListener('click', () => cameraInput.click());
+
+            function handleFileSelect(input) {
+                input.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            imagePreview.innerHTML = `<img src="${event.target.result}" alt="عکس محصول">`;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                    imageMenu.style.display = 'none';
+                });
+            }
+
+            handleFileSelect(fileInput);
+            handleFileSelect(cameraInput);
+
+            // مدیریت چک‌باکس نامحدود
+            const unlimitedCheckbox = document.getElementById('unlimited_checkbox');
+            const countInput = document.getElementById('inventory_count');
+
+            unlimitedCheckbox.addEventListener('change', () => {
+                if (unlimitedCheckbox.checked) {
+                    countInput.disabled = true;
+                    countInput.value = 'نامحدود';
+                } else {
+                    countInput.disabled = false;
+                    countInput.value = '0';
+                    countInput.focus();
+                }
+            });
+
+            // مدال دسته‌بندی
+            const modal = document.getElementById('category_modal');
+            const newBtn = document.getElementById('new_category_btn');
+            const closeBtn = document.getElementById('close_modal');
+            const saveBtn = document.getElementById('save_category');
+            const newCatInput = document.getElementById('new_category_name');
+
+            newBtn.addEventListener('click', () => modal.style.display = 'flex');
+            closeBtn.addEventListener('click', () => modal.style.display = 'none');
+            window.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+
+            // Tooltip Bootstrap
+            const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+            [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+
+            // بارگذاری دسته‌بندی‌ها از سرور
+            await loadCategories();
+
+            // ========================================
+            // مدیریت ثبت محصول
+            // ========================================
+            document.getElementById('product-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> در حال ثبت...';
+                submitBtn.disabled = true;
+                
+                try {
+                    const productData = prepareFormData();
+                    const result = await submitProduct(productData);
                     
-                    localStorage.setItem('business_code', response.data.business_code);
-                    localStorage.setItem('business_name', response.data.business_name);
+                    if (result && (fileInput.files[0] || cameraInput.files[0])) {
+                        const imageFile = fileInput.files[0] || cameraInput.files[0];
+                        await uploadProductImage(result.id, imageFile);
+                    }
                     
-                    setTimeout(() => {
-                        window.location.href = '/index.html';
-                    }, 1000);
-                } else {
-                    showNotification(response.data.error || 'خطا در ورود', 'error');
+                } finally {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
                 }
-            } catch (error) {
-                showNotification(error.response?.data?.error || 'خطا در ورود', 'error');
-            } finally {
-                setLoading('login-btn', false);
-            }
-        }
+            });
 
-        // ============== فراموشی رمز/کد ==============
-        function showForgotPassword() {
-            const modal = document.getElementById('forgot-modal');
-            const content = document.getElementById('forgot-content');
-            
-            content.innerHTML = `
-                <h3 class="text-xl font-bold text-teal-800 mb-4">بازیابی رمز عبور</h3>
-                <p class="text-sm text-gray-600 mb-4">شماره موبایل یا ایمیل خود را وارد کنید</p>
-                <input type="text" id="recovery-contact" class="w-full p-3 border border-gray-300 rounded-lg mb-4" placeholder="شماره موبایل یا ایمیل">
-                <button id="send-reset-btn" onclick="sendResetCode()" class="w-full py-3 bg-teal-800 text-white rounded-lg hover:bg-teal-900">
-                    ارسال کد بازیابی
-                </button>
-                <button onclick="closeModal()" class="w-full py-2 mt-2 text-gray-600 hover:underline">
-                    انصراف
-                </button>
-            `;
-            
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-
-        function showForgotCode() {
-            const modal = document.getElementById('forgot-modal');
-            const content = document.getElementById('forgot-content');
-            
-            content.innerHTML = `
-                <h3 class="text-xl font-bold text-teal-800 mb-4">بازیابی کد کسب‌وکار</h3>
-                <p class="text-sm text-gray-600 mb-4">شماره موبایل خود را وارد کنید</p>
-                <input type="text" id="recovery-mobile" class="w-full p-3 border border-gray-300 rounded-lg mb-4" placeholder="شماره موبایل">
-                <button id="recover-code-btn" onclick="recoverBusinessCode()" class="w-full py-3 bg-teal-800 text-white rounded-lg hover:bg-teal-900">
-                    بازیابی کد
-                </button>
-                <button onclick="closeModal()" class="w-full py-2 mt-2 text-gray-600 hover:underline">
-                    انصراف
-                </button>
-            `;
-            
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-
-        function closeModal() {
-            const modal = document.getElementById('forgot-modal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
-
-        async function sendResetCode() {
-            const contact = document.getElementById('recovery-contact').value.trim();
-            if (!contact) {
-                showNotification('اطلاعات تماس را وارد کنید', 'error');
-                return;
-            }
-            
-            setLoading('send-reset-btn', true);
-            
-            try {
-                const response = await axios.post(`${API_BASE_URL}/reset-password/`, { recovery_contact: contact }, { withCredentials: true });
+            // ========================================
+            // مدیریت ساخت دسته‌بندی جدید
+            // ========================================
+            saveBtn.addEventListener('click', async () => {
+                const newCatName = newCatInput.value.trim();
                 
-                if (response.data.success) {
-                    showNotification('کد بازیابی ارسال شد', 'success');
-                    closeModal();
-                } else {
-                    showNotification(response.data.error || 'خطا در ارسال کد', 'error');
+                if (!newCatName) {
+                    showMessage('لطفاً نام دسته‌بندی را وارد کنید', 'error');
+                    return;
                 }
-            } catch (error) {
-                showNotification(error.response?.data?.error || 'خطا در بازیابی', 'error');
-            } finally {
-                setLoading('send-reset-btn', false);
-            }
-        }
-
-        async function recoverBusinessCode() {
-            const mobile = document.getElementById('recovery-mobile').value.trim();
-            if (!mobile.match(/^09[0-9]{9}$/)) {
-                showNotification('شماره موبایل معتبر وارد کنید', 'error');
-                return;
-            }
-            
-            setLoading('recover-code-btn', true);
-            
-            try {
-                const response = await axios.post(`${API_BASE_URL}/recover-code/`, { recovery_contact: mobile }, { withCredentials: true });
                 
-                if (response.data.success) {
-                    showNotification(`کد کسب‌وکار: ${response.data.business_code}`, 'success');
-                    closeModal();
-                } else {
-                    showNotification(response.data.error || 'خطا در بازیابی کد', 'error');
+                const originalText = saveBtn.innerHTML;
+                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> در حال ثبت...';
+                saveBtn.disabled = true;
+                
+                try {
+                    await createCategory(newCatName);
+                    modal.style.display = 'none';
+                    newCatInput.value = '';
+                } finally {
+                    saveBtn.innerHTML = originalText;
+                    saveBtn.disabled = false;
                 }
-            } catch (error) {
-                showNotification(error.response?.data?.error || 'خطا در بازیابی', 'error');
-            } finally {
-                setLoading('recover-code-btn', false);
-            }
-        }
+            });
 
-        // ============== کپی کد ==============
-        function copyBusinessCode() {
-            const codeInput = document.getElementById('signup-business-code');
-            codeInput.select();
-            document.execCommand('copy');
-            showNotification('کد کسب‌وکار کپی شد', 'success');
-        }
+            // ========================================
+            // مدیریت کد محصول
+            // ========================================
+            const categorySelect = document.getElementById('category_select');
+            const productCodeInput = document.getElementById('product_code');
 
-        // ============== بررسی وضعیت لاگین ==============
-        async function checkAuth() {
-            try {
-                const response = await axios.get(`${API_BASE_URL}/check-auth/`, { withCredentials: true });
-                
-                if (response.data.authenticated) {
-                    if (window.location.pathname === '/' || window.location.pathname.includes('login')) {
-                        window.location.href = '/index.html';
+            categorySelect.addEventListener('change', () => {
+                if (categorySelect.value) {
+                    const selectedOption = categorySelect.options[categorySelect.selectedIndex];
+                    const categoryCode = selectedOption.dataset.code;
+                    
+                    if (!productCodeInput.value) {
+                        const randomPart = Math.floor(Math.random() * 900 + 100);
+                        productCodeInput.value = `${categoryCode}-${randomPart}`;
                     }
                 }
-            } catch (error) {
-                console.log('Not authenticated');
-            }
+            });
+
+            productCodeInput.addEventListener('input', (e) => {
+                let value = e.target.value.replace(/[^0-9]/g, '');
+                if (value.length > 5) value = value.slice(0, 5);
+                
+                if (value.length > 2) {
+                    e.target.value = `${value.slice(0, 2)}-${value.slice(2)}`;
+                } else {
+                    e.target.value = value;
+                }
+            });
+        });
+
+        // Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/firouzeh_assistant/sw.js')
+                    .then(reg => console.log('Service Worker ثبت شد!', reg))
+                    .catch(err => console.log('خطا:', err));
+            });
         }
-
-        // ============== اجرای اولیه ==============
-        showForm('login');
-        checkAuth();
-
-        // اینترسپتور برای axios
-        axios.defaults.withCredentials = true;
-        axios.defaults.headers.common['Content-Type'] = 'application/json';
-        axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
     </script>
 </body>
 </html>
