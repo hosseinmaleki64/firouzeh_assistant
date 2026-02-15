@@ -477,7 +477,7 @@
                     localStorage.setItem('business_name', data.business_name);
                     
                     setTimeout(() => {
-                        window.location.href = '/accounts/dashboard/';
+                        window.location.href = '/index.html';
                     }, 2000);
                 } else {
                     showNotification(data.error || 'خطا در ثبت‌نام', 'error');
@@ -516,7 +516,7 @@
                     localStorage.setItem('business_name', response.data.business_name);
                     
                     setTimeout(() => {
-                        window.location.href = '/accounts/dashboard/';
+                        window.location.href = '/index.html';
                     }, 1000);
                 } else {
                     showNotification(response.data.error || 'خطا در ورود', 'error');
@@ -640,7 +640,7 @@
                 
                 if (response.data.authenticated) {
                     if (window.location.pathname === '/' || window.location.pathname.includes('login')) {
-                        window.location.href = '/accounts/dashboard/';
+                        window.location.href = '/index.html';
                     }
                 }
             } catch (error) {
