@@ -328,6 +328,17 @@
         .catch(err => console.log('خطا:', err));
     });
   }
+
+  // چک کن توکن هست یا نه
+    document.addEventListener('DOMContentLoaded', function() {
+        const token = localStorage.getItem('access_token');
+        console.log('Token in dashboard:', token ? 'دارم' : 'ندارم');
+        
+        if (!token) {
+            // اگه توکن نبود، برو به صفحه لاگین
+            window.location.href = 'login.html';
+        }
+    });
     </script>
 </body>
 

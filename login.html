@@ -504,16 +504,19 @@
             setLoading('login-btn', true);
             
             try {
-                const response = await axios.post(`${API_BASE_URL}/login/`, {
+                // از JWT login استفاده کن، نه login ساده
+                const response = await axios.post(`${API_BASE_URL}/jwt/login/`, {
                     business_code: businessCode,
                     password: password
-                }, { withCredentials: true });
+                });
                 
-                if (response.data.success) {
+                if (response.data.access) {  // اگه توکن برگشت
                     showNotification('ورود موفقیت‌آمیز', 'success');
                     
-                    localStorage.setItem('business_code', response.data.business_code);
-                    localStorage.setItem('business_name', response.data.business_name);
+                    // ذخیره توکن در localStorage
+                    localStorage.setItem('access_token', response.data.access);
+                    localStorage.setItem('refresh_token', response.data.refresh);
+                    localStorage.setItem('business_code', response.data.business.business_code);
                     
                     setTimeout(() => {
                         window.location.href = '/index.html';
@@ -522,6 +525,7 @@
                     showNotification(response.data.error || 'خطا در ورود', 'error');
                 }
             } catch (error) {
+                console.error('Login error:', error);
                 showNotification(error.response?.data?.error || 'خطا در ورود', 'error');
             } finally {
                 setLoading('login-btn', false);
