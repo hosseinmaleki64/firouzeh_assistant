@@ -339,6 +339,17 @@
             window.location.href = 'login.html';
         }
     });
+
+// نمایش توکن برای دیباگ
+    document.addEventListener('DOMContentLoaded', function() {
+        const token = localStorage.getItem('access_token');
+        console.log('Dashboard - Token exists:', !!token);
+        if (token) {
+            console.log('Token preview:', token.substring(0, 20) + '...');
+        } else {
+            console.log('No token found!');
+        }
+    });
     </script>
 </body>
 

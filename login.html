@@ -242,6 +242,7 @@
 
     <script>
         // ============== تنظیمات ==============
+        // ✅ آدرس API - این خط رو چک کن
         const API_BASE_URL = 'http://127.0.0.1:8000/api/accounts';
         
         // ============== توابع کمکی ==============
@@ -489,7 +490,7 @@
             }
         }
 
-        // ============== ورود ==============
+        // ✅ ============== ورود اصلاح‌شده ==============
         async function handleLogin(event) {
             event.preventDefault();
             
@@ -504,19 +505,29 @@
             setLoading('login-btn', true);
             
             try {
-                // از JWT login استفاده کن، نه login ساده
+                // ✅ استفاده از jwt/login به جای login
                 const response = await axios.post(`${API_BASE_URL}/jwt/login/`, {
                     business_code: businessCode,
                     password: password
                 });
                 
-                if (response.data.access) {  // اگه توکن برگشت
+                console.log('Login response:', response.data);  // برای دیباگ
+                
+                // ✅ چک کن access_token توی پاسخ هست
+                if (response.data.access) {
                     showNotification('ورود موفقیت‌آمیز', 'success');
                     
-                    // ذخیره توکن در localStorage
+                    // ✅ ذخیره توکن در localStorage
                     localStorage.setItem('access_token', response.data.access);
                     localStorage.setItem('refresh_token', response.data.refresh);
-                    localStorage.setItem('business_code', response.data.business.business_code);
+                    
+                    // اطلاعات business رو هم ذخیره کن
+                    if (response.data.business) {
+                        localStorage.setItem('business_code', response.data.business.business_code);
+                        localStorage.setItem('business_name', response.data.business.business_name);
+                    }
+                    
+                    console.log('Token saved:', response.data.access);  // برای دیباگ
                     
                     setTimeout(() => {
                         window.location.href = '/index.html';
@@ -638,23 +649,23 @@
         }
 
         // ============== بررسی وضعیت لاگین ==============
-       async function checkAuth() {
-    try {
-        const response = await axios.get(`${API_BASE_URL}/check-auth/`, { withCredentials: true });
-        
-        if (response.data.authenticated) {
-            if (window.location.pathname === '/' || 
-                window.location.pathname.includes('login') || 
-                window.location.pathname.includes('signup') || 
-                window.location.pathname.endsWith('.html')) {   // ← مهم
+        async function checkAuth() {
+            try {
+                const response = await axios.get(`${API_BASE_URL}/check-auth/`, { withCredentials: true });
                 
-                window.location.href = '/index.html';
+                if (response.data.authenticated) {
+                    if (window.location.pathname === '/' || 
+                        window.location.pathname.includes('login') || 
+                        window.location.pathname.includes('signup') || 
+                        window.location.pathname.endsWith('.html')) {   // ← مهم
+                        
+                        window.location.href = '/index.html';
+                    }
+                }
+            } catch (error) {
+                console.log('Not authenticated');
             }
         }
-    } catch (error) {
-        console.log('Not authenticated');
-    }
-}
 
         // ============== اجرای اولیه ==============
         showForm('login');
