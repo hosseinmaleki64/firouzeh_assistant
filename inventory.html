@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="main.css/foter.css">
     <style>
+        /* استایل‌های شما دقیقاً مثل قبل */
         :root {
             --primary: #00796b;
             --primary-color: #00796b;
@@ -362,7 +363,17 @@
             transform: scale(1.08);
         }
 
-        /*من فایل سی اس اش فوتر رو جدا کردم */ 
+        /* من فایل سی اس اش فوتر رو جدا کردم */
+        .loading-spinner {
+            text-align: center;
+            padding: 40px;
+            grid-column: 1 / -1;
+        }
+        
+        .loading-spinner i {
+            font-size: 2rem;
+            color: var(--primary);
+        }
 
         @media (min-width: 768px) {
             .products-grid {
@@ -397,275 +408,455 @@
     </select>
 
     <div class="toggle-group">
-        <div class="toggle" id="inStockToggle">
+        <div class="toggle active" id="inStockToggle">
             <i class="fas fa-check-circle"></i> موجود
             <span class="toggle-count" id="inStockCount">۰</span>
         </div>
-        <div class="toggle" id="outOfStockToggle">
+        <div class="toggle active" id="outOfStockToggle">
             <i class="fas fa-times-circle"></i> ناموجود
             <span class="toggle-count" id="outOfStockCount">۰</span>
         </div>
     </div>
 </div>
 
-<div class="products-grid" id="productsGrid"></div>
+<div class="products-grid" id="productsGrid">
+    <div class="loading-spinner">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>در حال بارگذاری...</p>
+    </div>
+</div>
 
 <div class="empty-state" id="emptyState" style="display:none;">
     <h2>هنوز محصولی ثبت نشده است</h2>
     <a href="add_product.html">
-    <button class="btn-add-first">افزودن اولین محصول</button>
+        <button class="btn-add-first">افزودن اولین محصول</button>
     </a>
 </div>
+
 <a href="add_product.html">
-<div class="fab" id="addProductFab" title="افزودن محصول جدید">
-    <i class="fas fa-plus"></i>
-</div>
+    <div class="fab" id="addProductFab" title="افزودن محصول جدید">
+        <i class="fas fa-plus"></i>
+    </div>
 </a>
- <!-- ۶: فوتر -->
-    <footer class="bottom-nav">
+
+<!-- فوتر -->
+<footer class="bottom-nav">
     <a href="">
-    <div class="nav-item" data-page="costs" onclick="navigate('costs', this)">
-        <i class="fas fa-money-bill-wave"></i>
-        <span>هزینه‌ها</span>
-        <div class="indicator"></div>
-    </div>
-</a>
-<a href="pending_orders.html">
-    <div class="nav-item " data-page="orders" onclick="navigate('orders', this)">
-        <i class="fas fa-box-open"></i>
-        <span>سفارش‌ها</span>
-        <div class="indicator"></div>
-    </div>
-</a>
-    <!-- این یکی همیشه nav-home داره (برجسته و دایره سفید) -->
-     <a href="index.html">
-    <div class="nav-item nav-home" data-page="home" onclick="navigate('home', this)">
-        <div class="home-circle">
-            <i class="fas fa-home"></i>
+        <div class="nav-item" data-page="costs" onclick="navigate('costs', this)">
+            <i class="fas fa-money-bill-wave"></i>
+            <span>هزینه‌ها</span>
+            <div class="indicator"></div>
         </div>
-        <span>خانه</span>
-        <div class="indicator"></div>
-    </div>
-</a>
-<a href="inventory.html">
-    <div class="nav-item active" data-page="inventory" onclick="navigate('inventory', this)">
-        <i class="fas fa-warehouse"></i>
-        <span>انبار</span>
-        <div class="indicator"></div>
-    </div>
-</a>
-<a href="reports.html">
-    <div class="nav-item" data-page="reports" onclick="navigate('reports', this)">
-        <i class="fas fa-chart-bar"></i>
-        <span>گزارشات</span>
-        <div class="indicator"></div>
-    </div>
-</a>  
+    </a>
+    <a href="pending_orders.html">
+        <div class="nav-item " data-page="orders" onclick="navigate('orders', this)">
+            <i class="fas fa-box-open"></i>
+            <span>سفارش‌ها</span>
+            <div class="indicator"></div>
+        </div>
+    </a>
+    <a href="index.html">
+        <div class="nav-item nav-home" data-page="home" onclick="navigate('home', this)">
+            <div class="home-circle">
+                <i class="fas fa-home"></i>
+            </div>
+            <span>خانه</span>
+            <div class="indicator"></div>
+        </div>
+    </a>
+    <a href="inventory.html">
+        <div class="nav-item active" data-page="inventory" onclick="navigate('inventory', this)">
+            <i class="fas fa-warehouse"></i>
+            <span>انبار</span>
+            <div class="indicator"></div>
+        </div>
+    </a>
+    <a href="reports.html">
+        <div class="nav-item" data-page="reports" onclick="navigate('reports', this)">
+            <i class="fas fa-chart-bar"></i>
+            <span>گزارشات</span>
+            <div class="indicator"></div>
+        </div>
+    </a>  
 </footer>
 
 <script>
-// داده‌های نمونه (۱۵ محصول)
-const productsData = [
-    {id:1, name:"پیراشکی گوشت", code:"01-025", category:"فست‌فود", stock:42, cost:18000, sell:45000, description:"پیراشکی گوشت تازه با خمیر دست‌ساز", image:"https://via.placeholder.com/80x80/ffc107/000?text=پیراشکی"},
-    {id:2, name:"کیک شکلاتی", code:"02-014", category:"شیرینی", stock:8, cost:95000, sell:220000, description:"کیک شکلاتی سه طبقه با گاناش", image:"https://via.placeholder.com/80x80/dc3545/fff?text=کیک"},
-    {id:3, name:"دونات ساده", code:"03-008", category:"شیرینی", stock:0, cost:12000, sell:35000, description:"دونات ساده با شکر", image:""},
-    {id:4, name:"مینی پیتزا مارگاریتا", code:"01-031", category:"فست‌فود", stock:18, cost:32000, sell:75000, description:"مینی پیتزا با پنیر و گوجه", image:"https://via.placeholder.com/80x80/28a745/fff?text=پیتزا"},
-    {id:5, name:"نان خامه‌ای", code:"02-019", category:"شیرینی", stock:3, cost:28000, sell:65000, description:"نان خامه‌ای تازه", image:""},
-    {id:6, name:"کلوچه خرمایی", code:"04-005", category:"خشکبار", stock:65, cost:14000, sell:38000, description:"کلوچه سنتی خرمایی", image:"https://via.placeholder.com/80x80/6f42c1/fff?text=کلوچه"},
-    {id:7, name:"کاپ کیک وانیلی", code:"02-022", category:"شیرینی", stock:0, cost:22000, sell:55000, description:"کاپ کیک وانیلی با کرم", image:""},
-    {id:8, name:"سمبوسه سیب‌زمینی", code:"01-017", category:"فست‌فود", stock:29, cost:15000, sell:40000, description:"سمبوسه سیب‌زمینی و سبزیجات", image:"https://via.placeholder.com/80x80/007bff/fff?text=سمبوسه"},
-    {id:9, name:"ژله میوه‌ای", code:"05-003", category:"دسر", stock:12, cost:18000, sell:48000, description:"ژله چند لایه با میوه", image:""},
-    {id:10, name:"پفک نمکی", code:"06-011", category:"اسنک", stock:150, cost:8000, sell:22000, description:"پفک نمکی بزرگ", image:"https://via.placeholder.com/80x80/ffc107/000?text=پفک"},
-    {id:11, name:"تارت لیمویی", code:"02-027", category:"شیرینی", stock:4, cost:85000, sell:195000, description:"تارت لیمویی ترش و شیرین", image:""},
-    {id:12, name:"فلافل", code:"01-009", category:"فست‌فود", stock:0, cost:16000, sell:42000, description:"فلافل خانگی", image:""},
-    {id:13, name:"بستنی سنتی", code:"05-007", category:"دسر", stock:22, cost:35000, sell:85000, description:"بستنی زعفرانی سنتی", image:""},
-    {id:14, name:"چیپس میوه", code:"06-004", category:"اسنک", stock:78, cost:22000, sell:58000, description:"چیپس میوه مخلوط", image:""},
-    {id:15, name:"شیرینی زبان", code:"02-033", category:"شیرینی", stock:19, cost:25000, sell:62000, description:"شیرینی زبان خامه‌ای", image:""}
-];
+    // ============================================
+    // تنظیمات پایه API
+    // ============================================
+    const API_BASE_URL = 'http://127.0.0.1:8000/api';
+    
+    const getAuthToken = () => {
+        return localStorage.getItem('access_token') || '';
+    };
 
-// متغیرهای حالت
-let searchTerm = "";
-let selectedCategory = "";
-let showInStock = true;
-let showOutOfStock = true;
+    // متغیرهای حالت
+    let allProducts = [];
+    let allCategories = [];
+    let searchTerm = "";
+    let selectedCategory = "";
+    let showInStock = true;
+    let showOutOfStock = true;
 
-// عناصر DOM
-const grid = document.getElementById("productsGrid");
-const totalCountEl = document.getElementById("totalCount");
-const inStockCountEl = document.getElementById("inStockCount");
-const outOfStockCountEl = document.getElementById("outOfStockCount");
-const emptyState = document.getElementById("emptyState");
-const addFab = document.getElementById("addProductFab");
+    // عناصر DOM
+    const grid = document.getElementById("productsGrid");
+    const totalCountEl = document.getElementById("totalCount");
+    const inStockCountEl = document.getElementById("inStockCount");
+    const outOfStockCountEl = document.getElementById("outOfStockCount");
+    const emptyState = document.getElementById("emptyState");
+    const addFab = document.getElementById("addProductFab");
+    const categoryFilter = document.getElementById("categoryFilter");
 
-// پر کردن دسته‌بندی‌ها
-function populateCategories() {
-    const select = document.getElementById("categoryFilter");
-    const categories = [...new Set(productsData.map(p => p.category))].sort();
-    categories.forEach(cat => {
-        const opt = document.createElement("option");
-        opt.value = cat;
-        opt.textContent = cat;
-        select.appendChild(opt);
-    });
-}
-
-// محاسبه شمارنده‌ها
-function updateCounters(filtered) {
-    const inStock = filtered.filter(p => p.stock > 0).length;
-    const outOfStock = filtered.filter(p => p.stock === 0).length;
-
-    totalCountEl.textContent = filtered.length;
-    inStockCountEl.textContent = inStock;
-    outOfStockCountEl.textContent = outOfStock;
-
-    emptyState.style.display = filtered.length === 0 ? "block" : "none";
-    addFab.style.display = filtered.length > 0 ? "flex" : "none";
-}
-
-// رندر کارت‌ها
-function renderProducts() {
-    grid.innerHTML = "";
-
-    let filtered = productsData;
-
-    // جستجو
-    if (searchTerm) {
-        const term = searchTerm.toLowerCase();
-        filtered = filtered.filter(p =>
-            p.name.toLowerCase().includes(term) ||
-            p.code.toLowerCase().includes(term) ||
-            p.category.toLowerCase().includes(term)
-        );
+    // ============================================
+    // توابع کمکی
+    // ============================================
+    function showMessage(message, type = 'success') {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed top-0 start-50 translate-middle-x mt-3`;
+        msgDiv.style.zIndex = '9999';
+        msgDiv.style.minWidth = '300px';
+        msgDiv.style.textAlign = 'center';
+        msgDiv.style.padding = '12px';
+        msgDiv.style.borderRadius = '8px';
+        msgDiv.style.backgroundColor = type === 'success' ? '#d4edda' : '#f8d7da';
+        msgDiv.style.color = type === 'success' ? '#155724' : '#721c24';
+        msgDiv.style.border = `1px solid ${type === 'success' ? '#c3e6cb' : '#f5c6cb'}`;
+        msgDiv.innerHTML = message;
+        
+        document.body.appendChild(msgDiv);
+        
+        setTimeout(() => msgDiv.remove(), 3000);
     }
 
-    // دسته‌بندی
-    if (selectedCategory) {
-        filtered = filtered.filter(p => p.category === selectedCategory);
+    function formatNumber(num) {
+        return num.toLocaleString('fa-IR');
     }
 
-    // موجود / ناموجود
-    if (!showInStock && !showOutOfStock) {
-        filtered = [];
-    } else if (!showInStock) {
-        filtered = filtered.filter(p => p.stock === 0);
-    } else if (!showOutOfStock) {
-        filtered = filtered.filter(p => p.stock > 0);
-    }
-
-    updateCounters(filtered);
-
-    if (filtered.length === 0) return;
-
-    filtered.forEach(product => {
-        const card = document.createElement("div");
-        card.className = "product-card";
-        if (product.stock === 0) card.classList.add("zero-stock");
-        else if (product.stock < 5) card.classList.add("low-stock");
-
-        card.innerHTML = `
-            <div class="card-header">
-                ${product.image ?
-                    `<img src="${product.image}" class="card-img" alt="${product.name}">` :
-                    `<i class="fas fa-box card-img-placeholder"></i>`
+    // ============================================
+    // دریافت اطلاعات از سرور
+    // ============================================
+    async function loadProducts() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/products/`, {
+                headers: {
+                    'Authorization': `Bearer ${getAuthToken()}`,
+                    'Content-Type': 'application/json',
                 }
-            </div>
-            <div class="card-body">
-                <h3 class="product-name">${product.name}</h3>
-                <div class="product-code" title="کلیک برای کپی" data-code="${product.code}">
-                    کد: ${product.code}
-                </div>
-                <div class="category-tag">${product.category}</div>
-
-                <div class="stock-info ${product.stock < 5 ? 'stock-low' : product.stock === 0 ? 'stock-zero' : ''}">
-                    موجودی: ${product.stock === 0 ? 'ناموجود' : product.stock + ' عدد'}
-                </div>
-
-                <div class="prices">
-                    <span class="cost-price">${product.cost.toLocaleString('fa-IR')} تومان</span>
-                    <span class="sell-price">${product.sell.toLocaleString('fa-IR')} تومان</span>
-                </div>
-
-                <div class="card-actions">
-                    <button class="btn-small btn-edit"><i class="fas fa-edit"></i> ویرایش</button>
-                    <button class="btn-small btn-delete"><i class="fas fa-trash"></i> حذف</button>
-                </div>
-
-                ${product.description ? `
-                <div class="card-details">
-                    ${product.description}
-                </div>` : ""}
-            </div>
-        `;
-
-        // گسترش کارت
-        card.addEventListener("click", (e) => {
-            if (!e.target.closest(".btn-small") && !e.target.closest(".product-code")) {
-                card.classList.toggle("expanded");
-            }
-        });
-
-        // کپی کد
-        card.querySelector(".product-code").addEventListener("click", function(e) {
-            e.stopPropagation();
-            const code = this.dataset.code;
-            navigator.clipboard.writeText(code).then(() => {
-                const oldText = this.textContent;
-                this.textContent = "کپی شد!";
-                setTimeout(() => this.textContent = oldText, 1800);
             });
+            
+            if (!response.ok) throw new Error('خطا در دریافت محصولات');
+            
+            allProducts = await response.json();
+            
+            // بارگذاری همزمان دسته‌بندی‌ها
+            await loadCategories();
+            
+            renderProducts();
+            
+        } catch (error) {
+            console.error('خطا:', error);
+            showMessage('خطا در دریافت اطلاعات', 'error');
+            grid.innerHTML = '<div class="empty-state"><h2>خطا در بارگذاری</h2><button class="btn-add-first" onclick="location.reload()">تلاش مجدد</button></div>';
+        }
+    }
+
+    async function loadCategories() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/categories/`, {
+                headers: {
+                    'Authorization': `Bearer ${getAuthToken()}`,
+                    'Content-Type': 'application/json',
+                }
+            });
+            
+            if (!response.ok) throw new Error('خطا در دریافت دسته‌بندی‌ها');
+            
+            allCategories = await response.json();
+            populateCategories();
+            
+        } catch (error) {
+            console.error('خطا:', error);
+        }
+    }
+
+    // ============================================
+    // حذف محصول
+    // ============================================
+    async function deleteProduct(productId, productCode) {
+        if (!confirm(`آیا از حذف محصول ${productCode} اطمینان دارید؟`)) {
+            return;
+        }
+        
+        try {
+            const response = await fetch(`${API_BASE_URL}/products/${productId}/`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${getAuthToken()}`,
+                    'Content-Type': 'application/json',
+                }
+            });
+            
+            if (!response.ok) throw new Error('خطا در حذف محصول');
+            
+            showMessage(`✅ محصول ${productCode} با موفقیت حذف شد`);
+            
+            // بارگذاری مجدد محصولات
+            await loadProducts();
+            
+        } catch (error) {
+            console.error('خطا:', error);
+            showMessage('خطا در حذف محصول', 'error');
+        }
+    }
+
+    // ============================================
+    // پر کردن دسته‌بندی‌ها
+    // ============================================
+    function populateCategories() {
+        categoryFilter.innerHTML = '<option value="">همه دسته‌بندی‌ها</option>';
+        
+        allCategories.forEach(cat => {
+            const opt = document.createElement("option");
+            opt.value = cat.id;
+            opt.textContent = cat.name;
+            categoryFilter.appendChild(opt);
         });
+    }
 
-        grid.appendChild(card);
+    // ============================================
+    // محاسبه شمارنده‌ها
+    // ============================================
+    function updateCounters(filtered) {
+        const inStock = filtered.filter(p => {
+            const quantity = p.inventory_quantity || 0;
+            return quantity > 0;
+        }).length;
+        
+        const outOfStock = filtered.filter(p => {
+            const quantity = p.inventory_quantity || 0;
+            return quantity === 0;
+        }).length;
+
+        totalCountEl.textContent = formatNumber(filtered.length);
+        inStockCountEl.textContent = formatNumber(inStock);
+        outOfStockCountEl.textContent = formatNumber(outOfStock);
+
+        emptyState.style.display = filtered.length === 0 ? "block" : "none";
+    }
+
+    // ============================================
+    // رندر کارت‌ها
+    // ============================================
+    function renderProducts() {
+        grid.innerHTML = "";
+
+        let filtered = [...allProducts];
+
+        // جستجو
+        if (searchTerm) {
+            const term = searchTerm.toLowerCase();
+            filtered = filtered.filter(p =>
+                p.name.toLowerCase().includes(term) ||
+                p.product_code.toLowerCase().includes(term) ||
+                (p.category_name && p.category_name.toLowerCase().includes(term))
+            );
+        }
+
+        // دسته‌بندی
+        if (selectedCategory) {
+            filtered = filtered.filter(p => p.category == selectedCategory);
+        }
+
+        // موجود / ناموجود
+        if (!showInStock && !showOutOfStock) {
+            filtered = [];
+        } else if (!showInStock) {
+            filtered = filtered.filter(p => (p.inventory_quantity || 0) === 0);
+        } else if (!showOutOfStock) {
+            filtered = filtered.filter(p => (p.inventory_quantity || 0) > 0);
+        }
+
+        updateCounters(filtered);
+
+        if (filtered.length === 0) return;
+
+        filtered.forEach(product => {
+            const quantity = product.inventory_quantity || 0;
+            const card = document.createElement("div");
+            card.className = "product-card";
+            
+            if (quantity === 0) card.classList.add("zero-stock");
+            else if (quantity < 5) card.classList.add("low-stock");
+
+            // محاسبه حاشیه سود
+            const profit = ((product.price - product.cost) / product.price * 100).toFixed(1);
+
+            card.innerHTML = `
+                <div class="card-header">
+                    <i class="fas fa-box card-img-placeholder"></i>
+                </div>
+                <div class="card-body">
+                    <h3 class="product-name">${product.name}</h3>
+                    <div class="product-code" title="کلیک برای کپی" data-code="${product.product_code}">
+                        کد: ${product.product_code}
+                    </div>
+                    <div class="category-tag">${product.category_name || 'بدون دسته'}</div>
+
+                    <div class="stock-info ${quantity < 5 ? 'stock-low' : quantity === 0 ? 'stock-zero' : ''}">
+                        موجودی: ${product.unlimited_stock ? 'نامحدود' : (quantity === 0 ? 'ناموجود' : formatNumber(quantity) + ' ' + getUnitLabel(product.unit))}
+                    </div>
+
+                    <div class="prices">
+                        <span class="cost-price">${formatNumber(product.cost)} تومان</span>
+                        <span class="sell-price">${formatNumber(product.price)} تومان</span>
+                    </div>
+                    
+                    <div style="font-size:0.8rem; color:#6c757d; margin-top:4px;">
+                        سود: ${profit}% | وضعیت: ${getStatusText(product.status)}
+                    </div>
+
+                    <div class="card-actions">
+                        <button class="btn-small btn-edit" onclick="editProduct(${product.id})">
+                            <i class="fas fa-edit"></i> ویرایش
+                        </button>
+                        <button class="btn-small btn-delete" onclick="deleteProduct(${product.id}, '${product.product_code}')">
+                            <i class="fas fa-trash"></i> حذف
+                        </button>
+                    </div>
+
+                    ${product.description ? `
+                    <div class="card-details">
+                        <strong>توضیحات:</strong><br>
+                        ${product.description}
+                    </div>` : ""}
+                </div>
+            `;
+
+            // گسترش کارت
+            card.addEventListener("click", (e) => {
+                if (!e.target.closest(".btn-small") && !e.target.closest(".product-code")) {
+                    card.classList.toggle("expanded");
+                }
+            });
+
+            // کپی کد
+            card.querySelector(".product-code").addEventListener("click", function(e) {
+                e.stopPropagation();
+                const code = this.dataset.code;
+                navigator.clipboard.writeText(code).then(() => {
+                    const oldText = this.textContent;
+                    this.textContent = "کپی شد!";
+                    setTimeout(() => this.textContent = oldText, 1800);
+                });
+            });
+
+            grid.appendChild(card);
+        });
+    }
+
+    function getUnitLabel(unit) {
+        const units = {
+            'number': 'عدد',
+            'kg': 'کیلوگرم',
+            'liter': 'لیتر',
+            'meter': 'متر',
+            'box': 'کارتن',
+            'pack': 'بسته'
+        };
+        return units[unit] || 'عدد';
+    }
+
+    function getStatusText(status) {
+        const statusMap = {
+            'green': '🟢 خوب',
+            'yellow': '🟡 متوسط',
+            'red': '🔴 بحرانی'
+        };
+        return statusMap[status] || status;
+    }
+
+    function editProduct(productId) {
+        window.location.href = `edit_product.html?id=${productId}`;
+    }
+
+    // ============================================
+    // Event Listeners
+    // ============================================
+    document.getElementById("search").addEventListener("input", e => {
+        searchTerm = e.target.value;
+        renderProducts();
     });
-}
 
-// Event Listeners
-document.getElementById("search").addEventListener("input", e => {
-    searchTerm = e.target.value;
-    renderProducts();
-});
-
-document.getElementById("categoryFilter").addEventListener("change", e => {
-    selectedCategory = e.target.value;
-    renderProducts();
-});
-
-document.getElementById("inStockToggle").addEventListener("click", function() {
-    this.classList.toggle("active");
-    showInStock = this.classList.contains("active");
-    renderProducts();
-});
-
-document.getElementById("outOfStockToggle").addEventListener("click", function() {
-    this.classList.toggle("active");
-    showOutOfStock = this.classList.contains("active");
-    renderProducts();
-});
-
-addFab.addEventListener("click", () => {
-    alert("صفحه افزودن محصول جدید");
-});
-
-document.querySelector(".btn-add-first")?.addEventListener("click", () => {
-    alert("صفحه افزودن اولین محصول");
-});
-
-function navigate(page) {
-    alert("انتقال به صفحه: " + page);
-}
-
-// شروع
-populateCategories();
-renderProducts();
-
- //اینم برا همون فایل سی وی هست که باید برا تمام فیال ها توی قسمت اسکریپت اضافه بشه 
-        if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/firouzeh_assistant/sw.js')
-        .then(reg => console.log('Service Worker ثبت شد!', reg))
-        .catch(err => console.log('خطا:', err));
+    document.getElementById("categoryFilter").addEventListener("change", e => {
+        selectedCategory = e.target.value;
+        renderProducts();
     });
-  }
+
+    document.getElementById("inStockToggle").addEventListener("click", function() {
+        this.classList.toggle("active");
+        showInStock = this.classList.contains("active");
+        renderProducts();
+    });
+
+    document.getElementById("outOfStockToggle").addEventListener("click", function() {
+        this.classList.toggle("active");
+        showOutOfStock = this.classList.contains("active");
+        renderProducts();
+    });
+
+    // ============================================
+    // تابع لاگین (برای دریافت توکن)
+    // ============================================
+    async function login(username, password) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/token/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, password })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                localStorage.setItem('access_token', data.access);
+                localStorage.setItem('refresh_token', data.refresh);
+                return true;
+            }
+        } catch (error) {
+            console.error('خطا در ورود:', error);
+        }
+        return false;
+    }
+
+    // بررسی توکن و بارگذاری
+    document.addEventListener('DOMContentLoaded', async () => {
+        const token = getAuthToken();
+        
+        if (!token) {
+            // اگر توکن نبود، صفحه لاگین رو نشون بده
+            grid.innerHTML = `
+                <div class="empty-state">
+                    <h2>لطفاً وارد شوید</h2>
+                    <button class="btn-add-first" onclick="window.location.href='login.html'">
+                        ورود به سیستم
+                    </button>
+                </div>
+            `;
+            return;
+        }
+        
+        await loadProducts();
+    });
+
+    // Service Worker
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/firouzeh_assistant/sw.js')
+                .then(reg => console.log('Service Worker ثبت شد!', reg))
+                .catch(err => console.log('خطا:', err));
+        });
+    }
 </script>
 </body>
 </html>
