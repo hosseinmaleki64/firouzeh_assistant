@@ -12,6 +12,10 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Font Awesome برای آیکون‌ها -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- 🔥 Flatpickr + Persian Locale (جدید) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    
     <meta name="csrf-token" content="{{ csrf_token }}">
     <style>
         :root {
@@ -333,6 +337,11 @@
             text-align: left;
         }
 
+        .text-muted {
+            color: #6c757d;
+            font-size: 0.85em;
+        }
+
         /* ریسپانسیو */
         @media (max-width: 768px) {
             .grid-2, .grid-3, .grid-4 {
@@ -364,7 +373,7 @@
 <body>
     <div class="container">
         <form id="order-form">
-            <!-- انتخاب نوع سفارش -->
+            <!-- انتخاب نوع سفارش و تاریخ ثبت -->
             <div class="form-section">
                 <div class="section-title">
                     <i class="fas fa-shopping-cart ml-2"></i>
@@ -389,6 +398,21 @@
                             <option value="in_person">حضوری</option>
                             <option value="other">سایر</option>
                         </select>
+                    </div>
+                </div>
+                
+                <!-- فیلد جدید: تاریخ ثبت سفارش (شمسی) -->
+                <div class="grid-2" style="margin-top: 15px;">
+                    <div>
+                        <label for="order_date">
+                            <i class="far fa-calendar-alt ml-1"></i>
+                            تاریخ ثبت سفارش (شمسی):
+                            <small class="text-muted">اگر خالی بماند، تاریخ امروز ثبت می‌شود</small>
+                        </label>
+                        <input type="text" id="order_date" placeholder="انتخاب تاریخ شمسی">
+                    </div>
+                    <div>
+                        <!-- این دیو خالی است برای حفظ ساختار گرید -->
                     </div>
                 </div>
             </div>
@@ -419,8 +443,8 @@
 
                 <div class="grid-2">
                     <div>
-                        <label for="delivery_date">تاریخ تحویل:</label>
-                        <input type="datetime-local" id="delivery_date">
+                        <label for="delivery_date">تاریخ تحویل (شمسی):</label>
+                        <input type="text" id="delivery_date" placeholder="انتخاب تاریخ شمسی">
                     </div>
                     
                     <div>
@@ -481,6 +505,10 @@
         </form>
     </div>
 
+    <!-- اسکریپت‌های Flatpickr -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fa.js"></script>
+
     <script>
         // ============================================
         // تنظیمات پایه API
@@ -498,6 +526,31 @@
         let products = [];
         let orderItems = [];
         let editingOrderId = null;
+
+        // ============================================
+        // Flatpickr Persian (شمسی)
+        // ============================================
+        let orderDatePicker, deliveryDatePicker;
+
+        function initPersianDatepickers() {
+            // تنظیمات مشترک برای هر دو تاریخ
+            const commonConfig = {
+                enableTime: true,
+                time_24hr: true,
+                dateFormat: "Y-m-d H:i",        // این فرمت به سرور می‌ره (میلادی)
+                locale: "fa",                    // تقویم شمسی
+                altInput: true,                  // ورودی جایگزین شمسی
+                altFormat: "Y/m/d ساعت H:i",    // چیزی که کاربر می‌بینه
+                placeholder: "انتخاب تاریخ شمسی",
+                defaultHour: 12
+            };
+
+            // تاریخ ثبت سفارش
+            orderDatePicker = flatpickr("#order_date", commonConfig);
+
+            // تاریخ تحویل
+            deliveryDatePicker = flatpickr("#delivery_date", commonConfig);
+        }
 
         // ============================================
         // نمایش پیام
@@ -775,9 +828,14 @@
             
             // تاریخ تحویل
             let deliveryDate = null;
-            const deliveryDateInput = document.getElementById('delivery_date').value;
-            if (deliveryDateInput) {
-                deliveryDate = new Date(deliveryDateInput).toISOString();
+            if (deliveryDatePicker && deliveryDatePicker.selectedDates.length > 0) {
+                deliveryDate = deliveryDatePicker.selectedDates[0].toISOString();
+            }
+            
+            // تاریخ ثبت سفارش
+            let orderDate = null;
+            if (orderDatePicker && orderDatePicker.selectedDates.length > 0) {
+                orderDate = orderDatePicker.selectedDates[0].toISOString();
             }
             
             const formData = {
@@ -786,6 +844,7 @@
                 customer_name: document.getElementById('customer_name').value,
                 customer_phone: document.getElementById('customer_phone').value,
                 customer_address: document.getElementById('customer_address').value,
+                order_date: orderDate,
                 delivery_date: deliveryDate,
                 description: document.getElementById('description').value,
                 items: validItems.map(item => ({
@@ -877,7 +936,6 @@
             document.getElementById('customer_name').value = '';
             document.getElementById('customer_phone').value = '';
             document.getElementById('customer_address').value = '';
-            document.getElementById('delivery_date').value = '';
             document.getElementById('description').value = '';
             
             // پاک کردن آیتم‌ها
@@ -890,6 +948,13 @@
             calculateTotals();
             editingOrderId = null;
             document.getElementById('submit-btn').innerHTML = '<i class="fas fa-save ml-2"></i>ثبت سفارش';
+
+            // ریست تاریخ‌ها
+            document.getElementById('order_date').value = '';
+            document.getElementById('delivery_date').value = '';
+            
+            if (orderDatePicker) orderDatePicker.clear();
+            if (deliveryDatePicker) deliveryDatePicker.clear();
         }
 
         // ============================================
@@ -915,16 +980,6 @@
                 document.getElementById('customer_address').value = order.customer_address;
                 document.getElementById('description').value = order.description || '';
                 
-                if (order.delivery_date) {
-                    const deliveryDate = new Date(order.delivery_date);
-                    const year = deliveryDate.getFullYear();
-                    const month = String(deliveryDate.getMonth() + 1).padStart(2, '0');
-                    const day = String(deliveryDate.getDate()).padStart(2, '0');
-                    const hours = String(deliveryDate.getHours()).padStart(2, '0');
-                    const minutes = String(deliveryDate.getMinutes()).padStart(2, '0');
-                    document.getElementById('delivery_date').value = `${year}-${month}-${day}T${hours}:${minutes}`;
-                }
-                
                 // پاک کردن آیتم‌های قبلی
                 orderItems = [];
                 document.getElementById('order-items-container').innerHTML = '';
@@ -940,6 +995,16 @@
                 
                 editingOrderId = orderId;
                 document.getElementById('submit-btn').innerHTML = '<i class="fas fa-edit ml-2"></i>بروزرسانی سفارش';
+
+                // تنظیم تاریخ ثبت (شمسی)
+                if (order.order_date) {
+                    orderDatePicker.setDate(order.order_date);   // Flatpickr خودش تبدیل می‌کنه
+                }
+                
+                // تنظیم تاریخ تحویل
+                if (order.delivery_date) {
+                    deliveryDatePicker.setDate(order.delivery_date);
+                }
                 
             } catch (error) {
                 console.error('خطا:', error);
@@ -1010,6 +1075,9 @@
                 console.log('Editing order:', editId);
                 await loadOrderForEdit(editId);
             }
+
+            // 🔥 مقداردهی اولیه تقویم‌های شمسی
+            initPersianDatepickers();
         });
 
         // ============================================

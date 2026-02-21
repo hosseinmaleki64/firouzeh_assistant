@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تنظیمات | نرم‌افزار حسابداری</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Vazir', 'Tahoma', sans-serif;
+        }
+
+        body {
+            background: #f0f5f7;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+
+        /* کارت اصلی تنظیمات */
+        .settings-card {
+            width: 100%;
+            max-width: 420px;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 8px 30px rgba(0, 150, 150, 0.12);
+            overflow: hidden;
+        }
+
+        /* هدر */
+        .settings-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e8f0f2;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .settings-header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1e2b3a;
+            position: relative;
+        }
+
+        .settings-header h1::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            right: 0;
+            width: 32px;
+            height: 3px;
+            background: #00b8b8;
+            border-radius: 4px;
+        }
+
+        .close-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            background: #f5fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #00a5a5;
+            font-size: 22px;
+            transition: all 0.2s;
+        }
+
+        .close-btn:hover {
+            background: #00b8b8;
+            color: white;
+        }
+
+        /* بخش کاربری */
+        .user-section {
+            padding: 20px 24px;
+            background: #f8fdfe;
+            border-bottom: 1px solid #e0f0f2;
+        }
+
+        .user-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            background: #00b8b8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+            box-shadow: 0 4px 10px rgba(0, 184, 184, 0.2);
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #1e2b3a;
+            margin-bottom: 4px;
+            font-size: 15px;
+        }
+
+        .user-company {
+            font-size: 12px;
+            color: #6b7a88;
+        }
+
+        .add-account-btn {
+            background: transparent;
+            border: 1px solid #00b8b8;
+            color: #00b8b8;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .add-account-btn:hover {
+            background: #00b8b8;
+            color: white;
+        }
+
+        .register-btn {
+            background: #00b8b8;
+            border: none;
+            color: white;
+            padding: 10px 24px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(0, 184, 184, 0.2);
+        }
+
+        .register-btn:hover {
+            background: #009999;
+            transform: translateY(-1px);
+        }
+
+        /* منوی تنظیمات */
+        .settings-menu {
+            padding: 16px;
+        }
+
+        .menu-group {
+            margin-bottom: 24px;
+        }
+
+        .menu-group-title {
+            font-size: 12px;
+            color: #8a9ca8;
+            padding: 0 12px 8px;
+            letter-spacing: 0.3px;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 16px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 4px;
+        }
+
+        .menu-item:hover {
+            background: #f8fdfe;
+        }
+
+        .menu-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: #f0fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 14px;
+            color: #00b8b8;
+            font-size: 18px;
+        }
+
+        .menu-content {
+            flex: 1;
+        }
+
+        .menu-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1e2b3a;
+            margin-bottom: 4px;
+        }
+
+        .menu-desc {
+            font-size: 11px;
+            color: #8a9ca8;
+        }
+
+        .badge-dev {
+            background: #f0fafc;
+            color: #00b8b8;
+            font-size: 10px;
+            padding: 4px 10px;
+            border-radius: 30px;
+            margin: 0 10px;
+        }
+
+        .toggle {
+            width: 44px;
+            height: 24px;
+            background: #d0e2e8;
+            border-radius: 30px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .toggle.active {
+            background: #00b8b8;
+        }
+
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            right: 2px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .toggle.active::after {
+            right: 22px;
+        }
+
+        /* آیتم‌های ویژه حسابداری */
+        .financial-badge {
+            background: #e6fffa;
+            color: #00a896;
+            font-size: 10px;
+            padding: 4px 10px;
+            border-radius: 30px;
+            margin-right: 10px;
+        }
+
+        /* بخش خروج */
+        .logout-section {
+            padding: 16px 20px 24px;
+            border-top: 1px solid #e8f0f2;
+        }
+
+        .logout-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 16px;
+            border-radius: 16px;
+            background: #fff5f5;
+            color: #e65a5a;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 20px;
+        }
+
+        .logout-item:hover {
+            background: #e65a5a;
+            color: white;
+        }
+
+        .logout-item .menu-icon {
+            background: #ffe5e5;
+            color: #e65a5a;
+        }
+
+        .logout-item:hover .menu-icon {
+            background: white;
+            color: #e65a5a;
+        }
+
+        .version-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: #8a9ca8;
+            padding: 0 8px;
+        }
+
+        .version-number {
+            background: #f0fafc;
+            padding: 4px 12px;
+            border-radius: 30px;
+            color: #00a5a5;
+            font-weight: 500;
+        }
+
+        /* نوتیفیکیشن */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #00b8b8;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 13px;
+            box-shadow: 0 4px 15px rgba(0, 184, 184, 0.3);
+            z-index: 1000;
+            animation: slideIn 0.3s;
+        }
+
+        .notification.error {
+            background: #e65a5a;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, 20px);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+
+        @media (max-width: 400px) {
+            .settings-card {
+                border-radius: 20px;
+            }
+            
+            .user-card {
+                flex-wrap: wrap;
+            }
+            
+            .add-account-btn {
+                width: 100%;
+                justify-content: center;
+                margin-top: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="settings-card">
+        <!-- هدر با دکمه بستن اصلاح شده -->
+        <div class="settings-header">
+            <h1>تنظیمات</h1>
+            <div class="close-btn" onclick="closeSettings()">✕</div>
+        </div>
+
+        <!-- بخش کاربری داینامیک -->
+        <div class="user-section" id="userSection">
+            <!-- توسط جاوااسکریپت پر می‌شه -->
+        </div>
+
+        <!-- منوی تنظیمات -->
+        <div class="settings-menu">
+            <!-- گروه اول: پشتیبانی و اطلاعات -->
+            <div class="menu-group">
+                <div class="menu-group-title">پشتیبانی و ارتباطات</div>
+                
+                <div class="menu-item">
+                    <div class="menu-icon">📞</div>
+                    <div class="menu-content">
+                        <div class="menu-title">تماس با پشتیبانی</div>
+                        <div class="menu-desc">پاسخگویی ۹ تا ۱۷</div>
+                    </div>
+                    <span class="financial-badge">۲۴ ساعته</span>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-icon">📋</div>
+                    <div class="menu-content">
+                        <div class="menu-title">درباره نرم‌افزار</div>
+                        <div class="menu-desc">نسخه حسابداری ۳.۲.۱</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- گروه دوم: تنظیمات سیستم -->
+            <div class="menu-group">
+                <div class="menu-group-title">تنظیمات سیستم</div>
+                
+                <div class="menu-item">
+                    <div class="menu-icon">🌐</div>
+                    <div class="menu-content">
+                        <div class="menu-title">زبان</div>
+                        <div class="menu-desc">فارسی - در حال توسعه</div>
+                    </div>
+                    <span class="badge-dev">آزمایشی</span>
+                    <div class="toggle" onclick="this.classList.toggle('active')"></div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-icon">💰</div>
+                    <div class="menu-content">
+                        <div class="menu-title">ارز پیش‌فرض</div>
+                        <div class="menu-desc">ریال / تومان</div>
+                    </div>
+                    <span class="financial-badge">پیش‌فرض: ریال</span>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-icon">📊</div>
+                    <div class="menu-content">
+                        <div class="menu-title">دوره مالی</div>
+                        <div class="menu-desc">سال مالی ۱۴۰۲</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- گروه سوم: امنیت و دسترسی -->
+            <div class="menu-group">
+                <div class="menu-group-title">امنیت و دسترسی</div>
+                
+                <div class="menu-item">
+                    <div class="menu-icon">🔐</div>
+                    <div class="menu-content">
+                        <div class="menu-title">ورود دو مرحله‌ای</div>
+                        <div class="menu-desc">افزایش امنیت حساب</div>
+                    </div>
+                    <div class="toggle" onclick="this.classList.toggle('active')"></div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-icon">👥</div>
+                    <div class="menu-content">
+                        <div class="menu-title">مدیریت کاربران</div>
+                        <div class="menu-desc">۳ کاربر فعال</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- بخش خروج و نسخه -->
+        <div class="logout-section">
+            <div class="logout-item" onclick="handleLogout()">
+                <div class="menu-icon">🚪</div>
+                <div class="menu-content">
+                    <div class="menu-title">خروج از حساب کاربری</div>
+                </div>
+            </div>
+
+            <div class="version-info">
+                <span>نسخه نرم‌افزار</span>
+                <span class="version-number">v ۴.۲.۰</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============== تنظیمات ==============
+        const API_BASE_URL = 'http://127.0.0.1:8000/api/accounts';
+
+        // ============== توابع کمکی ==============
+        function showMessage(text, type = 'success') {
+            const oldMsg = document.querySelector('.notification');
+            if (oldMsg) oldMsg.remove();
+
+            const msg = document.createElement('div');
+            msg.className = `notification ${type === 'error' ? 'error' : ''}`;
+            msg.textContent = text;
+            document.body.appendChild(msg);
+            
+            setTimeout(() => msg.remove(), 3000);
+        }
+
+        // ============== تابع بستن صفحه ==============
+        function closeSettings() {
+            // اگر صفحه در یک تب جدید باز شده، بسته میشه
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.close();
+            }
+            // اگر هیچکدوم کار نکرد، یه پیغام نشون بده
+            setTimeout(() => {
+                showMessage('برای بستن این صفحه از دکمه بازگشت مرورگر استفاده کنید', 'error');
+            }, 100);
+        }
+
+        // ============== مدیریت احراز هویت ==============
+        function isAuthenticated() {
+            return !!localStorage.getItem('access_token');
+        }
+
+        function getUserInfo() {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                try {
+                    return JSON.parse(userStr);
+                } catch {
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        // ============== بروزرسانی بخش کاربری با اطلاعات دقیق ==============
+        function updateUserSection() {
+            const section = document.getElementById('userSection');
+            
+            if (isAuthenticated()) {
+                const user = getUserInfo();
+                
+                // استخراج اطلاعات از پاسخ لاگین
+                let businessCode = '';
+                let recoveryContact = '';
+                let avatarChar = 'ک';
+                
+                if (user) {
+                    // اگه ساختار business رو داریم
+                    if (user.business_code) {
+                        businessCode = user.business_code;
+                        avatarChar = user.business_code.charAt(0);
+                    } else if (user.business && user.business.business_code) {
+                        businessCode = user.business.business_code;
+                        avatarChar = user.business.business_code.charAt(0);
+                    }
+                    
+                    if (user.recovery_contact) {
+                        recoveryContact = user.recovery_contact;
+                    } else if (user.business && user.business.recovery_contact) {
+                        recoveryContact = user.business.recovery_contact;
+                    }
+                }
+                
+                // اگه اطلاعات کامل نبود، از localStorage قبلی استفاده کن
+                if (!businessCode) {
+                    businessCode = localStorage.getItem('business_code') || 'کد کسب و کار';
+                    avatarChar = businessCode.charAt(0);
+                }
+                if (!recoveryContact) {
+                    recoveryContact = localStorage.getItem('recovery_contact') || 'شماره تماس';
+                }
+                
+                section.innerHTML = `
+                    <div class="user-card">
+                        <div class="user-avatar">${avatarChar}</div>
+                        <div class="user-info">
+                            <div class="user-name">${businessCode}</div>
+                            <div class="user-company">${recoveryContact}</div>
+                        </div>
+                        <button class="add-account-btn" onclick="addAccount()">
+                            <span>+</span> شرکت جدید
+                        </button>
+                    </div>
+                `;
+            } else {
+                section.innerHTML = `
+                    <div class="user-card">
+                        <div class="user-avatar">👤</div>
+                        <div class="user-info">
+                            <div class="user-name">کاربر مهمان</div>
+                            <div class="user-company">وارد حساب خود شوید</div>
+                        </div>
+                        <button class="register-btn" onclick="redirectToLogin()">
+                            ثبت نام / ورود
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // ============== هدایت به صفحه لاگین با ذخیره صفحه قبلی ==============
+        function redirectToLogin() {
+            // آدرس صفحه لاگین شما - اگه توی یه پوشه دیگه هست اصلاح کن
+            const loginPage = '/login.html'; // یا './login.html' یا 'login.html'
+            
+            // ذخیره کن که از لاگین برگشتیم به این صفحه
+            sessionStorage.setItem('redirectAfterLogin', window.location.href);
+            
+            window.location.href = loginPage;
+        }
+
+        // ============== تابع اضافه کردن حساب ==============
+        function addAccount() {
+            if (!isAuthenticated()) {
+                showMessage('لطفا ابتدا وارد حساب خود شوید', 'error');
+                redirectToLogin();
+                return;
+            }
+            showMessage('افزودن شرکت جدید - در حال توسعه');
+        }
+
+        // ============== تابع خروج از حساب ==============
+        async function handleLogout() {
+            if (!isAuthenticated()) {
+                showMessage('شما وارد حسابی نشده‌اید', 'error');
+                return;
+            }
+
+            if (confirm('آیا از خروج از حساب اطمینان دارید؟')) {
+                try {
+                    // پاک کردن همه اطلاعات از localStorage
+                    localStorage.removeItem('access_token');
+                    localStorage.removeItem('refresh_token');
+                    localStorage.removeItem('user');
+                    localStorage.removeItem('business_code');
+                    localStorage.removeItem('business_name');
+                    localStorage.removeItem('recovery_contact');
+                    
+                    showMessage('با موفقیت خارج شدید');
+                    updateUserSection();
+                    
+                } catch (error) {
+                    console.error('Logout error:', error);
+                    showMessage('خطا در خروج از حساب', 'error');
+                }
+            }
+        }
+
+        // ============== بررسی اعتبار توکن ==============
+        async function checkTokenValidity() {
+            if (!isAuthenticated()) return false;
+
+            const token = localStorage.getItem('access_token');
+            
+            try {
+                await axios.get(`${API_BASE_URL}/check-auth/`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                return true;
+            } catch (error) {
+                if (error.response?.status === 401) {
+                    return await refreshToken();
+                }
+                return false;
+            }
+        }
+
+        // ============== رفرش توکن ==============
+        async function refreshToken() {
+            const refresh = localStorage.getItem('refresh_token');
+            if (!refresh) return false;
+
+            try {
+                const response = await axios.post(`${API_BASE_URL}/jwt/refresh/`, {
+                    refresh: refresh
+                });
+
+                if (response.data.access) {
+                    localStorage.setItem('access_token', response.data.access);
+                    return true;
+                }
+                return false;
+            } catch (error) {
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('refresh_token');
+                localStorage.removeItem('user');
+                return false;
+            }
+        }
+
+        // ============== دریافت اطلاعات کاربر از سرور ==============
+        async function fetchUserInfo() {
+            if (!isAuthenticated()) return;
+
+            const token = localStorage.getItem('access_token');
+            
+            try {
+                const response = await axios.get(`${API_BASE_URL}/profile/`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.data) {
+                    // ذخیره اطلاعات کامل کاربر
+                    localStorage.setItem('user', JSON.stringify(response.data));
+                    if (response.data.business_code) {
+                        localStorage.setItem('business_code', response.data.business_code);
+                    }
+                    if (response.data.recovery_contact) {
+                        localStorage.setItem('recovery_contact', response.data.recovery_contact);
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching user info:', error);
+            }
+            
+            updateUserSection();
+        }
+
+        // ============== تنظیمات axios ==============
+        axios.defaults.withCredentials = true;
+        axios.defaults.headers.common['Content-Type'] = 'application/json';
+
+        axios.interceptors.request.use(
+            config => {
+                const token = localStorage.getItem('access_token');
+                if (token) {
+                    config.headers.Authorization = `Bearer ${token}`;
+                }
+                return config;
+            },
+            error => Promise.reject(error)
+        );
+
+        axios.interceptors.response.use(
+            response => response,
+            async error => {
+                const originalRequest = error.config;
+
+                if (error.response?.status === 401 && !originalRequest._retry) {
+                    originalRequest._retry = true;
+
+                    const refreshed = await refreshToken();
+                    if (refreshed) {
+                        const newToken = localStorage.getItem('access_token');
+                        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+                        return axios(originalRequest);
+                    } else {
+                        showMessage('نشست شما منقضی شده است. لطفا دوباره وارد شوید.', 'error');
+                        setTimeout(() => redirectToLogin(), 2000);
+                    }
+                }
+
+                return Promise.reject(error);
+            }
+        );
+
+        // ============== بارگذاری اولیه ==============
+        document.addEventListener('DOMContentLoaded', async () => {
+            // بررسی اگه از صفحه لاگین برگشتیم
+            const redirectAfterLogin = sessionStorage.getItem('redirectAfterLogin');
+            if (redirectAfterLogin === window.location.href) {
+                sessionStorage.removeItem('redirectAfterLogin');
+            }
+            
+            if (isAuthenticated()) {
+                const isValid = await checkTokenValidity();
+                if (isValid) {
+                    // دریافت اطلاعات کاربر از سرور
+                    await fetchUserInfo();
+                } else {
+                    updateUserSection();
+                }
+            } else {
+                updateUserSection();
+            }
+        });
+
+        // ============== کلیک روی آیتم‌های منو ==============
+        document.querySelectorAll('.menu-item:not(.has-toggle)').forEach(item => {
+            item.addEventListener('click', function(e) {
+                if (e.target.classList.contains('toggle')) return;
+                
+                if (!isAuthenticated()) {
+                    showMessage('برای دسترسی به این بخش لطفا وارد شوید', 'error');
+                    redirectToLogin();
+                    return;
+                }
+                
+                const title = this.querySelector('.menu-title')?.textContent;
+                if (title) {
+                    showMessage(`بخش ${title} - در حال توسعه`);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

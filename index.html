@@ -9,6 +9,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="main.css/style.css">
     <link rel="stylesheet" href="main.css/foter.css">
+    <!-- اضافه کردن Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- کتابخانه برای تبدیل تاریخ میلادی به شمسی -->
+    <script src="https://cdn.jsdelivr.net/npm/jalaali-js@1.2.3/dist/jalaali.min.js"></script>
 </head>
 
 <body>
@@ -21,272 +25,484 @@
             <div class="logo"></div>
             <div class="app-name">ابزار حسابداری</div>
         </div>
-
-        <button class="header-icon right-icon" title="تنظیمات">
-            <i class="fas fa-cog"></i>
-        </button>
+        <a href="setting.html">
+            <button class="header-icon right-icon" title="تنظیمات">
+                <i class="fas fa-cog"></i>
+            </button>
+        </a>
     </header>
+    
     <main>
         <div class="search-box">
             <div class="search-container">
                 <i class="fas fa-search search-icon"></i>
                 <input type="text" class="search-input" placeholder="جستجو در سفارش‌ها، محصولات، مشتریان..."
-                    autocomplete="off">
+                    autocomplete="off" id="searchInput">
             </div>
-            <!--باکس اول خلاصه سفارش  -->
-            <div class="sales-card">
+        </div>
+        
+        <!-- باکس اول خلاصه سفارش -->
+        <div class="sales-card">
+            <div class="sales-header">
+                <div class="title">خلاصه فروش</div>
+                <select id="summaryTimeFrame" onchange="updateDashboard()">
+                    <option value="daily">روزانه</option>
+                    <option value="weekly">هفتگی</option>
+                    <option value="monthly" selected>ماهانه</option>
+                    <option value="yearly">سالانه</option>
+                </select>
+            </div>
 
-                <div class="sales-header">
-                    <div class="title">
-                        خلاصه فروش
-                    </div>
+            <div class="stats-row">
+                <div class="stat">
+                    <div class="value" id="totalSales">0</div>
+                    <div class="label">فروش کل (تومان)</div>
+                </div>
+                <div class="stat">
+                    <div class="value profit" id="totalProfit">0</div>
+                    <div class="label">سود کل (تومان)</div>
+                </div>
+                <div class="stat">
+                    <div class="value" id="totalOrders">0</div>
+                    <div class="label">تعداد سفارش</div>
+                </div>
+            </div>
 
-                    <select id="timeFrame" onchange="updateChart()">
-                        <option value="monthly" selected>ماهانه</option>
-                        <option value="weekly">هفتگی</option>
-                        <option value="daily">روزانه</option>
-                        <option value="yearly">سالانه</option>
+            <div class="separator"></div>
+
+            <div class="top-products">
+                <div class="section-title">۳ محصول پرفروش</div>
+                <div class="products-row" id="topProducts">
+                    <div class="product loading">در حال بارگذاری...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- باکس جدید برای نمودار -->
+        <div class="chart-container">
+            <div class="chart-header">
+                <h3 class="chart-title">نمودار تحلیلی فروش و سود</h3>
+                <div class="time-selector">
+                    <select id="chartTimeFrame" onchange="updateDashboard()">
+                        <option value="daily">روزانه (۷ روز)</option>
+                        <option value="weekly" selected>هفتگی (۴ هفته)</option>
+                        <option value="monthly">ماهانه (۶ ماه)</option>
+                        <option value="yearly">سالانه (۵ سال)</option>
                     </select>
+                    <i class="fas fa-calendar-alt"></i>
                 </div>
-
-                <div class="stats-row">
-                    <div class="stat">
-                        <div class="value">1,500,000</div>
-                        <div class="label">فروش کل (تومان)</div>
-                    </div>
-                    <div class="stat">
-                        <div class="value profit">500,000</div>
-                        <div class="label">سود کل (تومان)</div>
-                    </div>
-                    <div class="stat">
-                        <div class="value">150</div>
-                        <div class="label">تعداد سفارش</div>
-                    </div>
-                </div>
-
-                <div class="separator"></div>
-
-                <div class="top-products">
-                    <div class="section-title">۳ محصول پرفروش</div>
-
-                    <div class="products-row">
-                        <div class="product">
-                            <div class="name">پیراشکی</div>
-                            <div class="count">42 عدد</div>
-                        </div>
-                        <div class="product">
-                            <div class="name">کیک</div>
-                            <div class="count">35 عدد</div>
-                        </div>
-                        <div class="product">
-                            <div class="name">دونات</div>
-                            <div class="count">28 عدد</div>
-                        </div>
-                    </div>
-                </div>
-
             </div>
-
-            <!-- باکس جدید برای نمودار -->
-            <div class="chart-container">
-                <div class="chart-header">
-                    <h3 class="chart-title">نمودار فروش و سود</h3>
-                    <div class="time-selector">
-                        <select id="timeFrame" onchange="updateChart()">
-                            <option value="monthly" selected>ماهانه</option>
-                            <option value="weekly">هفتگی</option>
-                            <option value="daily">روزانه</option>
-                            <option value="yearly">سالانه</option>
-                        </select>
-                        <i class="fas fa-calendar-alt"></i> <!-- آیکون تقویم برای تغییر زمان -->
-                    </div>
-                </div>
-                <canvas id="salesChart"></canvas>
+            
+            <!-- دکمه‌های تغییر نوع نمودار -->
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-bottom: 15px;">
+                <button onclick="changeChartType('line')" class="chart-type-btn active" id="lineBtn">
+                    <i class="fas fa-chart-line"></i> خطی
+                </button>
+                <button onclick="changeChartType('bar')" class="chart-type-btn" id="barBtn">
+                    <i class="fas fa-chart-bar"></i> میله‌ای
+                </button>
+                <button onclick="toggleBothDatasets()" class="chart-type-btn" id="bothBtn">
+                    <i class="fas fa-layer-group"></i> هردو
+                </button>
             </div>
+            
+            <canvas id="salesChart" style="max-height: 300px; width: 100%;"></canvas>
+            
+            <!-- خلاصه آماری زیر نمودار -->
+            <div style="display: flex; justify-content: space-around; margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee;">
+                <div>
+                    <small style="color: #666;">میانگین فروش</small>
+                    <div style="font-weight: bold; color: var(--secondary-color);" id="avgSales">۰ تومان</div>
+                </div>
+                <div>
+                    <small style="color: #666;">میانگین سود</small>
+                    <div style="font-weight: bold; color: #388e3c;" id="avgProfit">۰ تومان</div>
+                </div>
+                <div>
+                    <small style="color: #666;">نسبت سود به فروش</small>
+                    <div style="font-weight: bold; color: #d32f2f;" id="profitRatio">۰%</div>
+                </div>
+            </div>
+        </div>
 
-            <!-- Floating Action Menu -->
-<div class="fab-container">
-    <button class="fab main-fab" id="fab-toggle" aria-label="منوی اقدامات سریع">
-        <i class="fas fa-plus"></i>
-    </button>
-
-    <div class="fab-menu" id="fab-menu">
-        <a href="create_order.html">
-            <button class="fab-item" data-action="new-order">
-                <span>ثبت سفارش</span>
-                <i class="fas fa-shopping-cart"></i>
+        <!-- Floating Action Menu -->
+        <div class="fab-container">
+            <button class="fab main-fab" id="fab-toggle" aria-label="منوی اقدامات سریع">
+                <i class="fas fa-plus"></i>
             </button>
-        </a>
 
-        <a href="add_product.html">
-            <button class="fab-item" data-action="new-product">
-                <span>ثبت محصول</span>
-                <i class="fas fa-box"></i>
-            </button>
-        </a>
+            <div class="fab-menu" id="fab-menu">
+                <a href="create_order.html">
+                    <button class="fab-item" data-action="new-order">
+                        <span>ثبت سفارش</span>
+                        <i class="fas fa-shopping-cart"></i>
+                    </button>
+                </a>
+                <a href="add_product.html">
+                    <button class="fab-item" data-action="new-product">
+                        <span>ثبت محصول</span>
+                        <i class="fas fa-box"></i>
+                    </button>
+                </a>
+                <a href="your_expense_page.html">
+                    <button class="fab-item" data-action="new-expense">
+                        <span>ثبت هزینه</span>
+                        <i class="fas fa-money-bill-wave"></i>
+                    </button>
+                </a>
+            </div>
+        </div>
 
-        <a href="your_expense_page.html">
-            <button class="fab-item" data-action="new-expense">
-                <span>ثبت هزینه</span>
-                <i class="fas fa-money-bill-wave"></i>
-            </button>
-        </a>
-    </div>
-</div>
-
-            <!-- Overlay (برای بلور و تاریک کردن پس‌زمینه) -->
-            <div class="fab-overlay" id="fab-overlay"></div>
+        <!-- Overlay -->
+        <div class="fab-overlay" id="fab-overlay"></div>
     </main>
+    
     <footer class="bottom-nav">
-    <a href="costs.html"> <!-- اگر صفحه هزینه‌ها داری، href رو درست کن -->
-        <div class="nav-item" data-page="costs" onclick="navigate('costs', this)">
-            <i class="fas fa-money-bill-wave"></i>
-            <span>هزینه‌ها</span>
-            <div class="indicator"></div>
-        </div>
-    </a>
-
-    <a href="pending_orders.html">
-        <div class="nav-item" data-page="orders" onclick="navigate('orders', this)">
-            <i class="fas fa-box-open"></i>
-            <span>سفارش‌ها</span>
-            <div class="indicator"></div>
-        </div>
-    </a>
-
-    <!-- خانه همیشه فعاله -->
-    <a href="index.html">
-        <div class="nav-item nav-home active" data-page="home" onclick="navigate('home', this)">
-            <div class="home-circle">
-                <i class="fas fa-home"></i>
+        <a href="costs.html">
+            <div class="nav-item" data-page="costs">
+                <i class="fas fa-money-bill-wave"></i>
+                <span>هزینه‌ها</span>
+                <div class="indicator"></div>
             </div>
-            <span>خانه</span>
-            <div class="indicator"></div>
-        </div>
-    </a>
-
-    <a href="inventory.html">
-        <div class="nav-item" data-page="inventory" onclick="navigate('inventory', this)">
-            <i class="fas fa-warehouse"></i>
-            <span>انبار</span>
-            <div class="indicator"></div>
-        </div>
-    </a>
-
-    <a href="reports.html">
-        <div class="nav-item" data-page="reports" onclick="navigate('reports', this)">
-            <i class="fas fa-chart-bar"></i>
-            <span>گزارشات</span>
-            <div class="indicator"></div>
-        </div>
-    </a>
-</footer>
-
+        </a>
+        <a href="pending_orders.html">
+            <div class="nav-item" data-page="orders">
+                <i class="fas fa-box-open"></i>
+                <span>سفارش‌ها</span>
+                <div class="indicator"></div>
+            </div>
+        </a>
+        <a href="index.html">
+            <div class="nav-item nav-home active" data-page="home">
+                <div class="home-circle">
+                    <i class="fas fa-home"></i>
+                </div>
+                <span>خانه</span>
+                <div class="indicator"></div>
+            </div>
+        </a>
+        <a href="inventory.html">
+            <div class="nav-item" data-page="inventory">
+                <i class="fas fa-warehouse"></i>
+                <span>انبار</span>
+                <div class="indicator"></div>
+            </div>
+        </a>
+        <a href="reports.html">
+            <div class="nav-item" data-page="reports">
+                <i class="fas fa-chart-bar"></i>
+                <span>گزارشات</span>
+                <div class="indicator"></div>
+            </div>
+        </a>
+    </footer>
 
     <script>
-        function navigate(page, element) {
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            element.classList.add('active');
-
-            console.log("navigate to:", page);
-        }
-        // داده‌های نمونه برای تایم‌فریم‌های مختلف (می‌تونی واقعی جایگزین کنی)
-        const dataSets = {
-            monthly: {
-                labels: ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'],
-                sales: [1200000, 1500000, 1800000, 1400000, 1600000, 1900000, 1700000, 2000000, 2100000, 1800000, 2200000, 2500000],
-                profit: [400000, 500000, 600000, 450000, 550000, 650000, 550000, 700000, 750000, 600000, 800000, 900000]
-            },
-            weekly: {
-                labels: ['هفته 1', 'هفته 2', 'هفته 3', 'هفته 4'],
-                sales: [300000, 400000, 350000, 450000],
-                profit: [100000, 150000, 120000, 180000]
-            },
-            daily: {
-                labels: ['روز 1', 'روز 2', 'روز 3', 'روز 4', 'روز 5', 'روز 6', 'روز 7'],
-                sales: [50000, 60000, 55000, 70000, 65000, 80000, 75000],
-                profit: [15000, 20000, 18000, 25000, 22000, 30000, 28000]
-            },
-            yearly: {
-                labels: ['1400', '1401', '1402', '1403', '1404'],
-                sales: [10000000, 12000000, 15000000, 18000000, 20000000],
-                profit: [3000000, 4000000, 5000000, 6000000, 7000000]
-            }
-        };
-
-        // ایجاد چارت اولیه
+        // تنظیمات API
+        const API_BASE_URL = 'http://localhost:8000/api/reports/reports/dashboard/';
+        
         let chartInstance = null;
+        let currentChartType = 'line';
+        let showBoth = true;
+        let dashboardData = null;
 
-        function updateChart() {
-            const timeFrame = document.getElementById('timeFrame').value;
-            const data = dataSets[timeFrame];
+        // تابع دریافت توکن
+        function getToken() {
+            return localStorage.getItem('access_token');
+        }
 
-            // خواندن رنگ از CSS variable
-            const secondaryColor = getComputedStyle(document.documentElement)
-                .getPropertyValue('--secondary-color').trim();
+        // تابع فرمت کردن اعداد به تومان
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('fa-IR').format(Math.round(value)) + ' تومان';
+        }
 
+        // تابع تبدیل تاریخ میلادی به شمسی
+        function toJalali(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            const jDate = jalaali.toJalaali(date.getFullYear(), date.getMonth() + 1, date.getDate());
+            return `${jDate.jy}/${jDate.jm.toString().padStart(2, '0')}/${jDate.jd.toString().padStart(2, '0')}`;
+        }
+
+        // تابع اصلی دریافت داده از API
+        async function fetchDashboardData(timeframe) {
+            try {
+                const token = getToken();
+                if (!token) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                showLoading();
+                
+                const response = await fetch(`${API_BASE_URL}?timeframe=${timeframe}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        localStorage.removeItem('access_token');
+                        window.location.href = 'login.html';
+                        return;
+                    }
+                    throw new Error('خطا در دریافت اطلاعات');
+                }
+
+                const data = await response.json();
+                dashboardData = data;
+                updateUI(data);
+                hideLoading();
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showError('خطا در ارتباط با سرور');
+                hideLoading();
+            }
+        }
+
+        // نمایش لودینگ
+        function showLoading() {
+            document.querySelectorAll('.stat .value').forEach(el => {
+                el.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            });
+            document.getElementById('topProducts').innerHTML = 
+                '<div class="product loading">در حال بارگذاری...</div>';
+        }
+
+        // پنهان کردن لودینگ
+        function hideLoading() {
+            // این تابع خالی است چون مقداردهی مجدد انجام میشه
+        }
+
+        // نمایش خطا
+        function showError(message) {
+            // می‌توانید از یک toast یا alert استفاده کنید
+            console.error(message);
+        }
+
+        // آپدیت UI با داده‌های دریافتی
+        function updateUI(data) {
+            // به‌روزرسانی خلاصه
+            document.getElementById('totalSales').textContent = 
+                new Intl.NumberFormat('fa-IR').format(data.summary.total_sales);
+            document.getElementById('totalProfit').textContent = 
+                new Intl.NumberFormat('fa-IR').format(data.summary.total_profit);
+            document.getElementById('totalOrders').textContent = 
+                new Intl.NumberFormat('fa-IR').format(data.summary.total_orders);
+
+            // به‌روزرسانی محصولات پرفروش
+            const topProductsHtml = data.top_products.map(product => `
+                <div class="product">
+                    <div class="name">${product.name}</div>
+                    <div class="count">${new Intl.NumberFormat('fa-IR').format(product.qty)} عدد</div>
+                    <div class="revenue" style="font-size: 11px; color: #666;">
+                        ${formatCurrency(product.revenue)}
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('topProducts').innerHTML = topProductsHtml || '<div class="product">داده‌ای موجود نیست</div>';
+
+            // به‌روزرسانی نمودار
+            updateChartWithData(data.chart);
+        }
+
+        // آپدیت نمودار با داده واقعی
+        function updateChartWithData(chartData) {
+            if (!chartData || !chartData.labels || !chartData.sales) return;
+
+            // تبدیل تاریخ‌ها به شمسی اگر لازم باشه
+            const labels = chartData.labels.map(label => {
+                // اگر تاریخ میلادی هست به شمسی تبدیل کن
+                if (label.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                    return toJalali(label);
+                }
+                return label;
+            });
+
+            // محاسبه آمار
+            const avgSales = chartData.sales.reduce((a, b) => a + b, 0) / (chartData.sales.length || 1);
+            const avgProfit = chartData.profit.reduce((a, b) => a + b, 0) / (chartData.profit.length || 1);
+            const totalSales = chartData.sales.reduce((a, b) => a + b, 0);
+            const totalProfit = chartData.profit.reduce((a, b) => a + b, 0);
+            const ratio = totalSales > 0 ? ((totalProfit / totalSales) * 100).toFixed(1) : 0;
+            
+            document.getElementById('avgSales').textContent = formatCurrency(avgSales);
+            document.getElementById('avgProfit').textContent = formatCurrency(avgProfit);
+            document.getElementById('profitRatio').textContent = ratio + '%';
+
+            // نابود کردن نمودار قبلی
             if (chartInstance) {
                 chartInstance.destroy();
             }
 
             const ctx = document.getElementById('salesChart').getContext('2d');
+            
+            // رنگ‌ها
+            const secondaryColor = getComputedStyle(document.documentElement)
+                .getPropertyValue('--secondary-color').trim() || '#00796b';
+            
+            // ساخت دیتاست‌ها
+            const datasets = [];
+            
+            datasets.push({
+                label: 'فروش کل',
+                data: chartData.sales,
+                borderColor: secondaryColor,
+                backgroundColor: currentChartType === 'bar' ? secondaryColor + '80' : secondaryColor + '20',
+                borderWidth: 2,
+                pointBackgroundColor: secondaryColor,
+                pointBorderColor: 'white',
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                fill: currentChartType === 'line',
+                tension: 0.3,
+                yAxisID: 'y',
+            });
+            
+            datasets.push({
+                label: 'سود کل',
+                data: chartData.profit,
+                borderColor: '#388e3c',
+                backgroundColor: currentChartType === 'bar' ? '#388e3c80' : '#388e3c20',
+                borderWidth: 2,
+                pointBackgroundColor: '#388e3c',
+                pointBorderColor: 'white',
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                fill: currentChartType === 'line',
+                tension: 0.3,
+                borderDash: [5, 5],
+                yAxisID: 'y',
+            });
+
             chartInstance = new Chart(ctx, {
-                type: 'line', // منحنی (line chart)
+                type: currentChartType,
                 data: {
-                    labels: data.labels, // محور افقی: روزها/هفته‌ها/ماه‌ها/سال‌ها
-                    datasets: [
-                        {
-                            label: 'فروش کل',
-                            data: data.sales,
-                            borderColor: secondaryColor,
-                            backgroundColor: 'rgba(0, 121, 107, 0.2)',
-                            fill: true,
-                            tension: 0.4 // برای منحنی نرم
-                        },
-                        {
-                            label: 'سود کل',
-                            data: data.profit,
-                            borderColor: '#388e3c', // رنگ سبز برای سود
-                            backgroundColor: 'rgba(56, 142, 60, 0.2)',
-                            fill: true,
-                            tension: 0.4
-                        }
-                    ]
+                    labels: labels,
+                    datasets: datasets
                 },
                 options: {
                     responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'مبلغ (تومان)'
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'زمان'
-                            }
-                        }
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
                     },
                     plugins: {
                         legend: {
                             display: true,
-                            position: 'top'
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                boxWidth: 8,
+                                font: { size: 11 }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) label += ': ';
+                                    label += new Intl.NumberFormat('fa-IR').format(context.raw) + ' تومان';
+                                    return label;
+                                }
+                            }
                         }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(0,0,0,0.05)' },
+                            ticks: {
+                                callback: function(value) {
+                                    if (value >= 1000000) {
+                                        return (value / 1000000).toFixed(1) + 'M';
+                                    } else if (value >= 1000) {
+                                        return (value / 1000).toFixed(0) + 'K';
+                                    }
+                                    return value;
+                                }
+                            }
+                        },
+                        x: { grid: { display: false } }
                     }
                 }
             });
         }
 
-        // فراخوانی اولیه با دیفالت ماهانه
-        window.onload = updateChart;
+        // تابع اصلی آپدیت داشبورد
+        function updateDashboard() {
+            const summaryTimeframe = document.getElementById('summaryTimeFrame').value;
+            const chartTimeframe = document.getElementById('chartTimeFrame').value;
+            
+            // از timeframe نمودار استفاده می‌کنیم چون داده‌های بیشتری داره
+            fetchDashboardData(chartTimeframe);
+        }
 
-        // فقط این اسکریپت کوچک را اضافه کن (می‌تونی در <script> انتهای body بگذاری)
+        // تغییر نوع نمودار
+        function changeChartType(type) {
+            currentChartType = type;
+            
+            document.querySelectorAll('.chart-type-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(type + 'Btn').classList.add('active');
+            
+            if (dashboardData) {
+                updateChartWithData(dashboardData.chart);
+            }
+        }
 
+        // نمایش/عدم نمایش هر دو دیتاست
+        function toggleBothDatasets() {
+            showBoth = !showBoth;
+            const bothBtn = document.getElementById('bothBtn');
+            
+            if (showBoth) {
+                bothBtn.classList.add('active');
+            } else {
+                bothBtn.classList.remove('active');
+            }
+            
+            if (dashboardData) {
+                updateChartWithData(dashboardData.chart);
+            }
+        }
+
+        // جستجو
+        document.getElementById('searchInput')?.addEventListener('input', function(e) {
+            const searchTerm = e.target.value;
+            if (searchTerm.length > 2) {
+                // می‌توانید API جستجو را هم اضافه کنید
+                console.log('Searching:', searchTerm);
+            }
+        });
+
+        // بارگذاری اولیه
+        window.onload = function() {
+            // تنظیم کلاس‌های active
+            document.getElementById('lineBtn').classList.add('active');
+            document.getElementById('bothBtn').classList.add('active');
+            
+            // بررسی توکن
+            const token = getToken();
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // دریافت داده‌ها
+            updateDashboard();
+        };
+
+        // منوی FAB
         const toggleBtn = document.getElementById('fab-toggle');
         const menu = document.getElementById('fab-menu');
         const overlay = document.getElementById('fab-overlay');
@@ -298,59 +514,16 @@
         }
 
         toggleBtn.addEventListener('click', toggleFab);
-
-        // بستن با کلیک روی overlay
         overlay.addEventListener('click', toggleFab);
 
-        // عملکرد هر دکمه (placeholder – بعداً جایگزین کن)
-        document.querySelectorAll('.fab-item').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const action = btn.dataset.action;
-
-                if (action === 'new-order') {
-                    alert('ثبت سفارش جدید');
-                    // یا: window.location.href = '/new-order.html';
-                } else if (action === 'new-product') {
-                    alert('ثبت محصول جدید');
-                } else if (action === 'new-expense') {
-                    alert('ثبت هزینه جدید');
-                }
-
-                // بعد از کلیک، منو بسته شود
-                toggleFab();
-            });
-        });
-        //اینم برا همون فایل سی وی هست که باید برا تمام فیال ها توی قسمت اسکریپت اضافه بشه 
+        // Service Worker
         if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/firouzeh_assistant/sw.js')
-        .then(reg => console.log('Service Worker ثبت شد!', reg))
-        .catch(err => console.log('خطا:', err));
-    });
-  }
-
-  // چک کن توکن هست یا نه
-    document.addEventListener('DOMContentLoaded', function() {
-        const token = localStorage.getItem('access_token');
-        console.log('Token in dashboard:', token ? 'دارم' : 'ندارم');
-        
-        if (!token) {
-            // اگه توکن نبود، برو به صفحه لاگین
-            window.location.href = 'login.html';
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/firouzeh_assistant/sw.js')
+                    .then(reg => console.log('Service Worker ثبت شد!', reg))
+                    .catch(err => console.log('خطا:', err));
+            });
         }
-    });
-
-// نمایش توکن برای دیباگ
-    document.addEventListener('DOMContentLoaded', function() {
-        const token = localStorage.getItem('access_token');
-        console.log('Dashboard - Token exists:', !!token);
-        if (token) {
-            console.log('Token preview:', token.substring(0, 20) + '...');
-        } else {
-            console.log('No token found!');
-        }
-    });
     </script>
 </body>
-
 </html>

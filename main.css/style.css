@@ -425,11 +425,40 @@ main {
     max-height: 250px;
     /* ارتفاع مناسب برای موبایل */
 }
-
-
-
-
-
-
-
+ /* استایل‌های اضافی برای نمودار */
+        .chart-type-btn {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            padding: 5px 12px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #666;
+        }
+        
+        .chart-type-btn:hover {
+            background: var(--secondary-color);
+            color: white;
+            border-color: var(--secondary-color);
+        }
+        
+        .chart-type-btn.active {
+            background: var(--secondary-color);
+            color: white;
+            border-color: var(--secondary-color);
+        }
+        
+        #bothBtn.active {
+            background: #9c27b0;
+            border-color: #9c27b0;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-top: 20px;
+        }
        
