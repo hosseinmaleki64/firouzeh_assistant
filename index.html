@@ -9,12 +9,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="main.css/style.css">
     <link rel="stylesheet" href="main.css/foter.css">
+    <!-- اضافه کردن config.js -->
+    <script src="config.js"></script>
     <!-- اضافه کردن Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <!-- کتابخانه برای تبدیل تاریخ میلادی به شمسی -->
     <script src="https://cdn.jsdelivr.net/npm/jalaali-js@1.2.3/dist/jalaali.min.js"></script>
 </head>
-
 <body>
     <header class="app-header">
         <button class="header-icon left-icon" title="خرید اشتراک">
@@ -198,332 +199,333 @@
     </footer>
 
     <script>
-        // تنظیمات API
-        const API_BASE_URL = 'http://localhost:8000/api/reports/reports/dashboard/';
-        
-        let chartInstance = null;
-        let currentChartType = 'line';
-        let showBoth = true;
-        let dashboardData = null;
+    // تنظیمات API - حالا از config.js استفاده می‌کنیم
+    // const API_BASE_URL = 'http://localhost:8000/api/reports/reports/dashboard/'; // این خط حذف میشه
+    
+    let chartInstance = null;
+    let currentChartType = 'line';
+    let showBoth = true;
+    let dashboardData = null;
 
-        // تابع دریافت توکن
-        function getToken() {
-            return localStorage.getItem('access_token');
-        }
+    // تابع دریافت توکن
+    function getToken() {
+        return localStorage.getItem('access_token');
+    }
 
-        // تابع فرمت کردن اعداد به تومان
-        function formatCurrency(value) {
-            return new Intl.NumberFormat('fa-IR').format(Math.round(value)) + ' تومان';
-        }
+    // تابع فرمت کردن اعداد به تومان
+    function formatCurrency(value) {
+        return new Intl.NumberFormat('fa-IR').format(Math.round(value)) + ' تومان';
+    }
 
-        // تابع تبدیل تاریخ میلادی به شمسی
-        function toJalali(dateStr) {
-            if (!dateStr) return '';
-            const date = new Date(dateStr);
-            const jDate = jalaali.toJalaali(date.getFullYear(), date.getMonth() + 1, date.getDate());
-            return `${jDate.jy}/${jDate.jm.toString().padStart(2, '0')}/${jDate.jd.toString().padStart(2, '0')}`;
-        }
+    // تابع تبدیل تاریخ میلادی به شمسی
+    function toJalali(dateStr) {
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        const jDate = jalaali.toJalaali(date.getFullYear(), date.getMonth() + 1, date.getDate());
+        return `${jDate.jy}/${jDate.jm.toString().padStart(2, '0')}/${jDate.jd.toString().padStart(2, '0')}`;
+    }
 
-        // تابع اصلی دریافت داده از API
-        async function fetchDashboardData(timeframe) {
-            try {
-                const token = getToken();
-                if (!token) {
-                    window.location.href = 'login.html';
-                    return;
-                }
-
-                showLoading();
-                
-                const response = await fetch(`${API_BASE_URL}?timeframe=${timeframe}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (!response.ok) {
-                    if (response.status === 401) {
-                        localStorage.removeItem('access_token');
-                        window.location.href = 'login.html';
-                        return;
-                    }
-                    throw new Error('خطا در دریافت اطلاعات');
-                }
-
-                const data = await response.json();
-                dashboardData = data;
-                updateUI(data);
-                hideLoading();
-                
-            } catch (error) {
-                console.error('Error:', error);
-                showError('خطا در ارتباط با سرور');
-                hideLoading();
-            }
-        }
-
-        // نمایش لودینگ
-        function showLoading() {
-            document.querySelectorAll('.stat .value').forEach(el => {
-                el.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            });
-            document.getElementById('topProducts').innerHTML = 
-                '<div class="product loading">در حال بارگذاری...</div>';
-        }
-
-        // پنهان کردن لودینگ
-        function hideLoading() {
-            // این تابع خالی است چون مقداردهی مجدد انجام میشه
-        }
-
-        // نمایش خطا
-        function showError(message) {
-            // می‌توانید از یک toast یا alert استفاده کنید
-            console.error(message);
-        }
-
-        // آپدیت UI با داده‌های دریافتی
-        function updateUI(data) {
-            // به‌روزرسانی خلاصه
-            document.getElementById('totalSales').textContent = 
-                new Intl.NumberFormat('fa-IR').format(data.summary.total_sales);
-            document.getElementById('totalProfit').textContent = 
-                new Intl.NumberFormat('fa-IR').format(data.summary.total_profit);
-            document.getElementById('totalOrders').textContent = 
-                new Intl.NumberFormat('fa-IR').format(data.summary.total_orders);
-
-            // به‌روزرسانی محصولات پرفروش
-            const topProductsHtml = data.top_products.map(product => `
-                <div class="product">
-                    <div class="name">${product.name}</div>
-                    <div class="count">${new Intl.NumberFormat('fa-IR').format(product.qty)} عدد</div>
-                    <div class="revenue" style="font-size: 11px; color: #666;">
-                        ${formatCurrency(product.revenue)}
-                    </div>
-                </div>
-            `).join('');
-
-            document.getElementById('topProducts').innerHTML = topProductsHtml || '<div class="product">داده‌ای موجود نیست</div>';
-
-            // به‌روزرسانی نمودار
-            updateChartWithData(data.chart);
-        }
-
-        // آپدیت نمودار با داده واقعی
-        function updateChartWithData(chartData) {
-            if (!chartData || !chartData.labels || !chartData.sales) return;
-
-            // تبدیل تاریخ‌ها به شمسی اگر لازم باشه
-            const labels = chartData.labels.map(label => {
-                // اگر تاریخ میلادی هست به شمسی تبدیل کن
-                if (label.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                    return toJalali(label);
-                }
-                return label;
-            });
-
-            // محاسبه آمار
-            const avgSales = chartData.sales.reduce((a, b) => a + b, 0) / (chartData.sales.length || 1);
-            const avgProfit = chartData.profit.reduce((a, b) => a + b, 0) / (chartData.profit.length || 1);
-            const totalSales = chartData.sales.reduce((a, b) => a + b, 0);
-            const totalProfit = chartData.profit.reduce((a, b) => a + b, 0);
-            const ratio = totalSales > 0 ? ((totalProfit / totalSales) * 100).toFixed(1) : 0;
-            
-            document.getElementById('avgSales').textContent = formatCurrency(avgSales);
-            document.getElementById('avgProfit').textContent = formatCurrency(avgProfit);
-            document.getElementById('profitRatio').textContent = ratio + '%';
-
-            // نابود کردن نمودار قبلی
-            if (chartInstance) {
-                chartInstance.destroy();
-            }
-
-            const ctx = document.getElementById('salesChart').getContext('2d');
-            
-            // رنگ‌ها
-            const secondaryColor = getComputedStyle(document.documentElement)
-                .getPropertyValue('--secondary-color').trim() || '#00796b';
-            
-            // ساخت دیتاست‌ها
-            const datasets = [];
-            
-            datasets.push({
-                label: 'فروش کل',
-                data: chartData.sales,
-                borderColor: secondaryColor,
-                backgroundColor: currentChartType === 'bar' ? secondaryColor + '80' : secondaryColor + '20',
-                borderWidth: 2,
-                pointBackgroundColor: secondaryColor,
-                pointBorderColor: 'white',
-                pointRadius: 4,
-                pointHoverRadius: 6,
-                fill: currentChartType === 'line',
-                tension: 0.3,
-                yAxisID: 'y',
-            });
-            
-            datasets.push({
-                label: 'سود کل',
-                data: chartData.profit,
-                borderColor: '#388e3c',
-                backgroundColor: currentChartType === 'bar' ? '#388e3c80' : '#388e3c20',
-                borderWidth: 2,
-                pointBackgroundColor: '#388e3c',
-                pointBorderColor: 'white',
-                pointRadius: 4,
-                pointHoverRadius: 6,
-                fill: currentChartType === 'line',
-                tension: 0.3,
-                borderDash: [5, 5],
-                yAxisID: 'y',
-            });
-
-            chartInstance = new Chart(ctx, {
-                type: currentChartType,
-                data: {
-                    labels: labels,
-                    datasets: datasets
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: {
-                        mode: 'index',
-                        intersect: false,
-                    },
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top',
-                            labels: {
-                                usePointStyle: true,
-                                boxWidth: 8,
-                                font: { size: 11 }
-                            }
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(0,0,0,0.8)',
-                            titleColor: '#fff',
-                            bodyColor: '#fff',
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.dataset.label || '';
-                                    if (label) label += ': ';
-                                    label += new Intl.NumberFormat('fa-IR').format(context.raw) + ' تومان';
-                                    return label;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: { color: 'rgba(0,0,0,0.05)' },
-                            ticks: {
-                                callback: function(value) {
-                                    if (value >= 1000000) {
-                                        return (value / 1000000).toFixed(1) + 'M';
-                                    } else if (value >= 1000) {
-                                        return (value / 1000).toFixed(0) + 'K';
-                                    }
-                                    return value;
-                                }
-                            }
-                        },
-                        x: { grid: { display: false } }
-                    }
-                }
-            });
-        }
-
-        // تابع اصلی آپدیت داشبورد
-        function updateDashboard() {
-            const summaryTimeframe = document.getElementById('summaryTimeFrame').value;
-            const chartTimeframe = document.getElementById('chartTimeFrame').value;
-            
-            // از timeframe نمودار استفاده می‌کنیم چون داده‌های بیشتری داره
-            fetchDashboardData(chartTimeframe);
-        }
-
-        // تغییر نوع نمودار
-        function changeChartType(type) {
-            currentChartType = type;
-            
-            document.querySelectorAll('.chart-type-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.getElementById(type + 'Btn').classList.add('active');
-            
-            if (dashboardData) {
-                updateChartWithData(dashboardData.chart);
-            }
-        }
-
-        // نمایش/عدم نمایش هر دو دیتاست
-        function toggleBothDatasets() {
-            showBoth = !showBoth;
-            const bothBtn = document.getElementById('bothBtn');
-            
-            if (showBoth) {
-                bothBtn.classList.add('active');
-            } else {
-                bothBtn.classList.remove('active');
-            }
-            
-            if (dashboardData) {
-                updateChartWithData(dashboardData.chart);
-            }
-        }
-
-        // جستجو
-        document.getElementById('searchInput')?.addEventListener('input', function(e) {
-            const searchTerm = e.target.value;
-            if (searchTerm.length > 2) {
-                // می‌توانید API جستجو را هم اضافه کنید
-                console.log('Searching:', searchTerm);
-            }
-        });
-
-        // بارگذاری اولیه
-        window.onload = function() {
-            // تنظیم کلاس‌های active
-            document.getElementById('lineBtn').classList.add('active');
-            document.getElementById('bothBtn').classList.add('active');
-            
-            // بررسی توکن
+    // تابع اصلی دریافت داده از API - تغییر یافته
+    async function fetchDashboardData(timeframe) {
+        try {
             const token = getToken();
             if (!token) {
                 window.location.href = 'login.html';
                 return;
             }
+
+            showLoading();
             
-            // دریافت داده‌ها
-            updateDashboard();
-        };
-
-        // منوی FAB
-        const toggleBtn = document.getElementById('fab-toggle');
-        const menu = document.getElementById('fab-menu');
-        const overlay = document.getElementById('fab-overlay');
-
-        function toggleFab() {
-            toggleBtn.classList.toggle('open');
-            menu.classList.toggle('open');
-            overlay.classList.toggle('open');
-        }
-
-        toggleBtn.addEventListener('click', toggleFab);
-        overlay.addEventListener('click', toggleFab);
-
-        // Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/firouzeh_assistant/sw.js')
-                    .then(reg => console.log('Service Worker ثبت شد!', reg))
-                    .catch(err => console.log('خطا:', err));
+            // استفاده از API_URL از config.js
+            const response = await fetch(`${API_URL}/api/reports/reports/dashboard/?timeframe=${timeframe}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
             });
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    localStorage.removeItem('access_token');
+                    window.location.href = 'login.html';
+                    return;
+                }
+                throw new Error('خطا در دریافت اطلاعات');
+            }
+
+            const data = await response.json();
+            dashboardData = data;
+            updateUI(data);
+            hideLoading();
+            
+        } catch (error) {
+            console.error('Error:', error);
+            showError('خطا در ارتباط با سرور');
+            hideLoading();
         }
-    </script>
+    }
+
+    // نمایش لودینگ
+    function showLoading() {
+        document.querySelectorAll('.stat .value').forEach(el => {
+            el.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        });
+        document.getElementById('topProducts').innerHTML = 
+            '<div class="product loading">در حال بارگذاری...</div>';
+    }
+
+    // پنهان کردن لودینگ
+    function hideLoading() {
+        // این تابع خالی است چون مقداردهی مجدد انجام میشه
+    }
+
+    // نمایش خطا
+    function showError(message) {
+        // می‌توانید از یک toast یا alert استفاده کنید
+        console.error(message);
+    }
+
+    // آپدیت UI با داده‌های دریافتی
+    function updateUI(data) {
+        // به‌روزرسانی خلاصه
+        document.getElementById('totalSales').textContent = 
+            new Intl.NumberFormat('fa-IR').format(data.summary.total_sales);
+        document.getElementById('totalProfit').textContent = 
+            new Intl.NumberFormat('fa-IR').format(data.summary.total_profit);
+        document.getElementById('totalOrders').textContent = 
+            new Intl.NumberFormat('fa-IR').format(data.summary.total_orders);
+
+        // به‌روزرسانی محصولات پرفروش
+        const topProductsHtml = data.top_products.map(product => `
+            <div class="product">
+                <div class="name">${product.name}</div>
+                <div class="count">${new Intl.NumberFormat('fa-IR').format(product.qty)} عدد</div>
+                <div class="revenue" style="font-size: 11px; color: #666;">
+                    ${formatCurrency(product.revenue)}
+                </div>
+            </div>
+        `).join('');
+
+        document.getElementById('topProducts').innerHTML = topProductsHtml || '<div class="product">داده‌ای موجود نیست</div>';
+
+        // به‌روزرسانی نمودار
+        updateChartWithData(data.chart);
+    }
+
+    // آپدیت نمودار با داده واقعی
+    function updateChartWithData(chartData) {
+        if (!chartData || !chartData.labels || !chartData.sales) return;
+
+        // تبدیل تاریخ‌ها به شمسی اگر لازم باشه
+        const labels = chartData.labels.map(label => {
+            // اگر تاریخ میلادی هست به شمسی تبدیل کن
+            if (label && label.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                return toJalali(label);
+            }
+            return label;
+        });
+
+        // محاسبه آمار
+        const avgSales = chartData.sales.reduce((a, b) => a + b, 0) / (chartData.sales.length || 1);
+        const avgProfit = chartData.profit.reduce((a, b) => a + b, 0) / (chartData.profit.length || 1);
+        const totalSales = chartData.sales.reduce((a, b) => a + b, 0);
+        const totalProfit = chartData.profit.reduce((a, b) => a + b, 0);
+        const ratio = totalSales > 0 ? ((totalProfit / totalSales) * 100).toFixed(1) : 0;
+        
+        document.getElementById('avgSales').textContent = formatCurrency(avgSales);
+        document.getElementById('avgProfit').textContent = formatCurrency(avgProfit);
+        document.getElementById('profitRatio').textContent = ratio + '%';
+
+        // نابود کردن نمودار قبلی
+        if (chartInstance) {
+            chartInstance.destroy();
+        }
+
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        
+        // رنگ‌ها
+        const secondaryColor = getComputedStyle(document.documentElement)
+            .getPropertyValue('--secondary-color').trim() || '#00796b';
+        
+        // ساخت دیتاست‌ها
+        const datasets = [];
+        
+        datasets.push({
+            label: 'فروش کل',
+            data: chartData.sales,
+            borderColor: secondaryColor,
+            backgroundColor: currentChartType === 'bar' ? secondaryColor + '80' : secondaryColor + '20',
+            borderWidth: 2,
+            pointBackgroundColor: secondaryColor,
+            pointBorderColor: 'white',
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            fill: currentChartType === 'line',
+            tension: 0.3,
+            yAxisID: 'y',
+        });
+        
+        datasets.push({
+            label: 'سود کل',
+            data: chartData.profit,
+            borderColor: '#388e3c',
+            backgroundColor: currentChartType === 'bar' ? '#388e3c80' : '#388e3c20',
+            borderWidth: 2,
+            pointBackgroundColor: '#388e3c',
+            pointBorderColor: 'white',
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            fill: currentChartType === 'line',
+            tension: 0.3,
+            borderDash: [5, 5],
+            yAxisID: 'y',
+        });
+
+        chartInstance = new Chart(ctx, {
+            type: currentChartType,
+            data: {
+                labels: labels,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            boxWidth: 8,
+                            font: { size: 11 }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0,0,0,0.8)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) label += ': ';
+                                label += new Intl.NumberFormat('fa-IR').format(context.raw) + ' تومان';
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(0,0,0,0.05)' },
+                        ticks: {
+                            callback: function(value) {
+                                if (value >= 1000000) {
+                                    return (value / 1000000).toFixed(1) + 'M';
+                                } else if (value >= 1000) {
+                                    return (value / 1000).toFixed(0) + 'K';
+                                }
+                                return value;
+                            }
+                        }
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // تابع اصلی آپدیت داشبورد
+    function updateDashboard() {
+        const summaryTimeframe = document.getElementById('summaryTimeFrame').value;
+        const chartTimeframe = document.getElementById('chartTimeFrame').value;
+        
+        // از timeframe نمودار استفاده می‌کنیم چون داده‌های بیشتری داره
+        fetchDashboardData(chartTimeframe);
+    }
+
+    // تغییر نوع نمودار
+    function changeChartType(type) {
+        currentChartType = type;
+        
+        document.querySelectorAll('.chart-type-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.getElementById(type + 'Btn').classList.add('active');
+        
+        if (dashboardData) {
+            updateChartWithData(dashboardData.chart);
+        }
+    }
+
+    // نمایش/عدم نمایش هر دو دیتاست
+    function toggleBothDatasets() {
+        showBoth = !showBoth;
+        const bothBtn = document.getElementById('bothBtn');
+        
+        if (showBoth) {
+            bothBtn.classList.add('active');
+        } else {
+            bothBtn.classList.remove('active');
+        }
+        
+        if (dashboardData) {
+            updateChartWithData(dashboardData.chart);
+        }
+    }
+
+    // جستجو
+    document.getElementById('searchInput')?.addEventListener('input', function(e) {
+        const searchTerm = e.target.value;
+        if (searchTerm.length > 2) {
+            // می‌توانید API جستجو را هم اضافه کنید
+            console.log('Searching:', searchTerm);
+        }
+    });
+
+    // بارگذاری اولیه
+    window.onload = function() {
+        // تنظیم کلاس‌های active
+        document.getElementById('lineBtn').classList.add('active');
+        document.getElementById('bothBtn').classList.add('active');
+        
+        // بررسی توکن
+        const token = getToken();
+        if (!token) {
+            window.location.href = 'login.html';
+            return;
+        }
+        
+        // دریافت داده‌ها
+        updateDashboard();
+    };
+
+    // منوی FAB
+    const toggleBtn = document.getElementById('fab-toggle');
+    const menu = document.getElementById('fab-menu');
+    const overlay = document.getElementById('fab-overlay');
+
+    function toggleFab() {
+        toggleBtn.classList.toggle('open');
+        menu.classList.toggle('open');
+        overlay.classList.toggle('open');
+    }
+
+    toggleBtn.addEventListener('click', toggleFab);
+    overlay.addEventListener('click', toggleFab);
+
+    // Service Worker
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/firouzeh_assistant/sw.js')
+                .then(reg => console.log('Service Worker ثبت شد!', reg))
+                .catch(err => console.log('خطا:', err));
+        });
+    }
+</script>
 </body>
 </html>

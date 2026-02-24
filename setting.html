@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تنظیمات | نرم‌افزار حسابداری</title>
+    <script src="config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         * {
@@ -476,8 +477,12 @@
     </div>
 
     <script>
-        // ============== تنظیمات ==============
-        const API_BASE_URL = 'http://127.0.0.1:8000/api/accounts';
+        // ============== تنظیمات - حالا از config.js میاد ==============
+        // این خط حذف شد چون از config.js میاد
+        // const API_BASE_URL = 'http://127.0.0.1:8000/api/accounts';
+        
+        // حالا API_BASE_URL رو از config.js میگیریم
+        const API_BASE_URL = API_URL + '/api/accounts';
 
         // ============== توابع کمکی ==============
         function showMessage(text, type = 'success') {

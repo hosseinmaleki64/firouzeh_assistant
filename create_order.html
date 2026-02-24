@@ -15,7 +15,8 @@
     
     <!-- 🔥 Flatpickr + Persian Locale (جدید) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    
+    <!-- اضافه کردن config.js -->
+    <script src="config.js"></script>
     <meta name="csrf-token" content="{{ csrf_token }}">
     <style>
         :root {
@@ -511,9 +512,13 @@
 
     <script>
         // ============================================
-        // تنظیمات پایه API
+        // تنظیمات پایه API - حالا از config.js میاد
         // ============================================
-        const API_BASE_URL = 'http://127.0.0.1:8000/api';
+        // این خط حذف شد چون از config.js میاد
+        // const API_BASE_URL = 'http://127.0.0.1:8000/api';
+        
+        // حالا API_BASE_URL رو از config.js میگیریم
+        const API_BASE_URL = API_URL + '/api';  // اضافه کردن /api به انتهای آدرس اصلی
         
         // تابع دریافت توکن
         const getAuthToken = () => {
